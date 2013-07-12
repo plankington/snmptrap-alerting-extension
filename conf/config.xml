@@ -1,0 +1,17 @@
+<snmp-trap>
+    <host>localhost</host>
+    <port>9000</port>
+    <community>PUBLIC</community>
+    <trap-host>123.232.132.122</trap-host>
+    <enable-logs>true</enable-logs>
+    <snmp-version>3</snmp-version>
+    <!--Only requred if version set to 3-->
+    <v3>
+        <security-level>2</security-level>
+        <username>username</username>
+        <password>password</password>
+        <auth-protocol>SHA</auth-protocol>
+        <priv-protocol>DES</priv-protocol>
+        <priv-protocol-password>password</priv-protocol-password>
+    </v3>
+</snmp-trap>

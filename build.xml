@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SNMPTrapSender" default="build">
+
+  <!-- Name of the output .jar file -->
+  <property name="jar.name" value="SNMPTrapSender.jar" />
+
+  <!-- Base directory for distribution target -->
+  <property name="deploy.home" value="dist/" />
+
+  <!-- Base directory for compilation targets -->
+  <property name="build.home" value="." />
+
+  <!-- Main class -->
+  <property name="main.class" value="com.appdynamics.snmp.SNMPTrapSender" />
+ 
+  <!-- The base directory for all libraries (jar) files -->
+  <property name="lib.home" value="lib" />
+  
+  <!-- The directory where the scripts are placed -->
+  <property name="script.home" value="script"/>
+  
+   <!-- Compiles the classes directory to create jar file -->
+  <property name="classes.dir" value="classes"/>
+
+  <!--The src directory -->
+  <property name="src.dir" value="src/main/java" />
+
+  <property name="conf.home" value="conf" />
+  
+  <!-- Lib classpath -->
+  <path id="classpath">
+    	<fileset dir="${lib.home}" includes="**/*.jar"/>
+  </path>
+
+  <!-- Cleans distribution folder -->
+  <target name="clean">
+    	<delete dir="${deploy.home}"/>
+  </target>	
+  
+	
+  <target name="compile" depends="clean">
+      <mkdir dir="classes"/>
+      <javac srcdir="${src.dir}"
+      destdir="${classes.dir}"
+      classpathref="classpath"
+      />
+</target>
+	
+  <!-- Builds the runnable jar file -->
+  <target name="build" description="Create jar and MANIFEST.MF" depends="compile">
+    <pathconvert property="libs.project" pathsep=" ">
+      <mapper>
+        <chainedmapper>
+          <!-- remove absolute path -->
+          <flattenmapper />
+
+          <!-- add lib/ prefix -->
+          <globmapper from="*" to="lib/*" />
+        </chainedmapper>
+      </mapper>
+      <path>
+        <!-- lib.home contains all jar files, 
+                                        in several subdirectories -->
+        <fileset dir="${lib.home}">
+          <include name="**/*.jar" />
+          <include name="**/*.txt" />
+        </fileset>
+      </path>
+
+    </pathconvert>
+	<mkdir dir="dist"/>
+    <!-- create the jar -->
+    <jar jarfile="${deploy.home}/${jar.name}" basedir="${build.home}/classes">
+
+      <manifest>
+        <attribute name="Built-By" value="${user.name}" />
+        <attribute name="Main-Class" value="${main.class}" />
+
+        <!-- Finally, use the generated libs path -->
+        <attribute name="Class-Path" value="${libs.project}" />
+      </manifest>
+    </jar>
+	<copy todir="${deploy.home}">
+    	<fileset dir="${script.home}"/>
+  	</copy>
+  	<copy todir="${deploy.home}/lib">
+  		<fileset dir="${lib.home}"/>
+  	</copy>
+  	<mkdir dir="${deploy.home}/conf" />
+ 	<copy todir="${deploy.home}/conf">
+ 		<fileset dir="${conf.home}" />
+ 	</copy>
+	<delete dir="${classes.dir}"/>
+  </target>
+
+</project>
