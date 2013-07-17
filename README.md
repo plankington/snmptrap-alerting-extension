@@ -2,12 +2,9 @@
 
 ##Use Case
 
-Simple Network Management Protocol (SNMP) is a protocol for managing IP network devices
-such as routers, switches, servers, workstations, etc. 
-An SNMP trap is an asynchronous notification between an SNMP agent to its SNMP manager.
+Simple Network Management Protocol (SNMP) is a protocol for managing IP network devices such as routers, switches, servers, workstations, etc. An SNMP trap is an asynchronous notification between an SNMP agent to its SNMP manager.
 
-With the SNMP Trap integration you can leverage your existing alerting infrastructure to notify 
-your operations team to resolve performance degradation issues.
+With the SNMP Trap integration you can leverage your existing alerting infrastructure to notify your operations team to resolve performance degradation issues.
 
 This tool sends SNMP trap alerts when triggered via an AppDynamics 3.6 policy violation.
 
@@ -15,36 +12,36 @@ This tool sends SNMP trap alerts when triggered via an AppDynamics 3.6 policy vi
 <table>
 <tbody>
 <tr>
-<th align = 'left'>AppDynamics Parameters </th>
-<th align = 'left'>SNMP Parameters </th>
-<th align = 'left'>Description </th>
+<th align="left">AppDynamics Parameters </th>
+<th align="left">SNMP Parameters </th>
+<th align="left">Description </th>
 </tr>
 <tr>
-<td align = 'left'>&nbsp;</td>
-<td align = 'left'>host </td>
-<td align = 'left'>Host of the destination where the trap is being sent </td>
+<td align="left">&nbsp;</td>
+<td align="left">host </td>
+<td align="left">Host of the destination where the trap is being sent </td>
 </tr>
 <tr>
-<td align = 'left'>&nbsp;</td>
-<td align = 'left'>port </td>
-<td align = 'left'>Port of the destination where the trap is being sent </td>
+<td align="left">&nbsp;</td>
+<td align="left">port </td>
+<td align="left">Port of the destination where the trap is being sent </td>
 </tr>
 <tr>
-<td align = 'left'>&nbsp;</td>
-<td align = 'left'> trap-host </td>
-<td align = 'left'> IP address of the source that is sending the trap </td>
+<td align="left">&nbsp;</td>
+<td align="left"> trap-host </td>
+<td align="left"> IP address of the source that is sending the trap </td>
 </tr>
 <tr>
-<td align = 'left'>&nbsp;</td>
-<td align = 'left'> community </td>
-<td align = 'left'> Community type of the SNMP trap. Default = PUBLIC <br class="atl-forced-newline" /> </td>
+<td align="left">&nbsp;</td>
+<td align="left"> community </td>
+<td align="left"> Community type of the SNMP trap. Default = PUBLIC <br class="atl-forced-newline" /> </td>
 </tr>
 <tr>
-<td align = 'left'>APP_NAME, PVN_ALERT_TIME,<br class="atl-forced-newline" /> SEVERITY,<br class="atl-forced-newline" /> POLICY_NAME,<br class="atl-forced-newline" /> AFFECTED_ENTITY_TYPE,<br class="atl-forced-newline" /> AFFECTED_ENTITY_NAME,<br class="atl-forced-newline" />
+<td align="left">APP_NAME, PVN_ALERT_TIME,<br class="atl-forced-newline" /> SEVERITY,<br class="atl-forced-newline" /> POLICY_NAME,<br class="atl-forced-newline" /> AFFECTED_ENTITY_TYPE,<br class="atl-forced-newline" /> AFFECTED_ENTITY_NAME,<br class="atl-forced-newline" />
 SUMMARY_MESSAGE, <br class="atl-forced-newline" /> DEEP_LINK_URL,<br class="atl-forced-newline" />
 TAG </td>
-<td align = 'left'>details </td>
-<td align = 'left'>These parameters tie to SNMP specific params:
+<td align="left">details </td>
+<td align="left">These parameters tie to SNMP specific params:
 <br class="atl-forced-newline" />
 <br class="atl-forced-newline" /> 
 Application = APP_NAME
@@ -64,14 +61,14 @@ Link = DEEP_LINK_URL
 Tag = TAG </td>
 </tr>
 <tr>
-<td align = 'left'>&nbsp;</td>
-<td align = 'left'> enable-logs </td>
-<td align = 'left'> Enables logging for debugging purposes </td>
+<td align="left">&nbsp;</td>
+<td align="left"> enable-logs </td>
+<td align="left"> Enables logging for debugging purposes </td>
 </tr>
 <tr>
-<td align = 'left'>&nbsp;</td>
-<td align = 'left'> snmp-version </td>
-<td align = 'left'> Trap version. (Supports v1, v2 and v3 traps) <br class="atl-forced-newline" /> </td>
+<td align="left">&nbsp;</td>
+<td align="left"> snmp-version </td>
+<td align="left"> Trap version. (Supports v1, v2 and v3 traps) <br class="atl-forced-newline" /> </td>
 </tr>
 </tbody>
 </table>
@@ -80,11 +77,11 @@ Tag = TAG </td>
 
 <table><tbody>
 <tr>
-<th align = 'left'>Parameter </th>
-<th align = 'left'>Description </th>
+<th align="left">Parameter </th>
+<th align="left">Description </th>
 </tr><tr>
 <td > security-level </td>
-<td align = 'left'> NoAuthNoPriv = 1&nbsp; <br class="atl-forced-newline" />
+<td align="left"> NoAuthNoPriv = 1&nbsp; <br class="atl-forced-newline" />
 AuthNoPriv = 2 <br class="atl-forced-newline" />
 AuthPriv = 3 <br class="atl-forced-newline" />
 <br class="atl-forced-newline" />
@@ -92,20 +89,20 @@ If necessary, see <a href="http://www.webnms.com/simulator/help/sim_network/nets
 </td>
 </tr>
 <tr>
-<td align = 'left'> username </td>
-<td align = 'left'> Username to validate trap </td>
+<td align="left"> username </td>
+<td align="left"> Username to validate trap </td>
 </tr>
 <tr>
-<td align = 'left'> password </td>
-<td align = 'left'> Password to validate trap. Required for security-level greater than 1 </td>
+<td align="left"> password </td>
+<td align="left"> Password to validate trap. Required for security-level greater than 1 </td>
 </tr>
 <tr>
-<td align = 'left'> auth-protocol </td>
-<td align = 'left'> Authentication Protocol (MD5 or SHA). Required for security-level greater than 1 </td>
+<td align="left"> auth-protocol </td>
+<td align="left"> Authentication Protocol (MD5 or SHA). Required for security-level greater than 1 </td>
 </tr>
 <tr>
-<td align = 'left'> priv-protocol </td>
-<td align = 'left'> Privacy Protocol. Required for security-level = 3 (AuthPriv) <br class="atl-forced-newline" />
+<td align="left"> priv-protocol </td>
+<td align="left"> Privacy Protocol. Required for security-level = 3 (AuthPriv) <br class="atl-forced-newline" />
 <br class="atl-forced-newline" />
 Supports: <br class="atl-forced-newline" />
 <ul>
@@ -118,8 +115,8 @@ Supports: <br class="atl-forced-newline" />
 </td>
 </tr>
 <tr>
-<td align = 'left'> priv-protocol-password </td>
-<td align = 'left'> Privacy protocol password. Required for security-level = 3 (AuthPriv) </td>
+<td align="left"> priv-protocol-password </td>
+<td align="left"> Privacy protocol password. Required for security-level = 3 (AuthPriv) </td>
 </tr>
 </tbody>
 </table>
@@ -261,11 +258,15 @@ The jar file can be used as a standalone. For information enter "--help" when ru
    	~~~~
 
 
+
 ##Contributing
 
-Always feel free to fork and contribute any changes directly via GitHub.
+Always feel free to fork and contribute any changes directly via [GitHub](https://github.com/Appdynamics/snmptrap-alerting-extension).
 
+##Community
+
+Find out more in the [AppSphere](http://appsphere.appdynamics.com/t5/Extensions/SNMP-Trap-Alerting-Extension/idi-p/825) community.
 
 ##Support
 
-For any support questions, please contact ace@appdynamics.com.
+For any questions or feature request, please contact [AppDynamics Center of Excellence](mailto://ace-request@appdynamics.com).
