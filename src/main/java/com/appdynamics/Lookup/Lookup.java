@@ -17,7 +17,7 @@
 
 
 
-package com.appdynamics.lookup;
+package com.appdynamics.Lookup;
 
 import java.util.HashMap;
 

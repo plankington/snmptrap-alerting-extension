@@ -48,26 +48,6 @@
 	
   <!-- Builds the runnable jar file -->
   <target name="build" description="Create jar and MANIFEST.MF" depends="compile">
-    <pathconvert property="libs.project" pathsep=" ">
-      <mapper>
-        <chainedmapper>
-          <!-- remove absolute path -->
-          <flattenmapper />
-
-          <!-- add lib/ prefix -->
-          <globmapper from="*" to="lib/*" />
-        </chainedmapper>
-      </mapper>
-      <path>
-        <!-- lib.home contains all jar files, 
-                                        in several subdirectories -->
-        <fileset dir="${lib.home}">
-          <include name="**/*.jar" />
-          <include name="**/*.txt" />
-        </fileset>
-      </path>
-
-    </pathconvert>
 	<mkdir dir="dist"/>
     <!-- create the jar -->
     <jar jarfile="${deploy.home}/${jar.name}" basedir="${build.home}/classes">
@@ -77,7 +57,7 @@
         <attribute name="Main-Class" value="${main.class}" />
 
         <!-- Finally, use the generated libs path -->
-        <attribute name="Class-Path" value="${libs.project}" />
+        <attribute name="Class-Path" value="lib/dom4j/dom4j-2.0.0-ALPHA-2.jar lib/log4j/log4j-1.2.17.jar lib/snmp4j/snmp4j-2.1.0-javadoc.jar lib/snmp4j/snmp4j-2.1.0.jar" />
       </manifest>
     </jar>
 	<copy todir="${deploy.home}">

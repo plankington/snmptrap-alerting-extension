@@ -62,7 +62,7 @@ import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 import com.appdynamics.snmp.type.ADSnmpData;
 import com.appdynamics.snmp.util.CustomNotification;
-import com.appdynamics.lookup.*;
+import com.appdynamics.Lookup.*;
 
 /**
  * Java class allows sending SNMP Traps
@@ -106,7 +106,7 @@ public class SNMPTrapSender extends CustomNotification
 			String host = config.get("host");
 			String port = config.get("port");
 			String trapHost = config.get("trap-host");
-			String community = (!config.containsKey("community") && config.get("community").toString().equals("")) ?
+			String community = (!config.containsKey("community") || config.get("community").toString().equals("")) ?
 					"PUBLIC" : config.get("community");
 			String snmp_ver = config.get("snmp-version");
 
@@ -440,19 +440,20 @@ public class SNMPTrapSender extends CustomNotification
 				System.out.println("\t-trig\t-\tTriggered by");
 				System.out.println("\t-n\t-\tNodes involved");
 				System.out.println("\t-b\t-\tBusiness txns involved");
-				System.out.println("\t-m\t-\tMachines involved");
+				System.out.println("\t-mac\t-\tMachines involved");
 				System.out.println("\t-tier\t-\tTiers involved");
 				System.out.println("\t-e\t-\tEvent Time");
 				System.out.println("\t-sever\t-\tSeverity");
 				System.out.println("\t-type\t-\tType");
 				System.out.println("\t-summ\t-\tSummary");
 				System.out.println("\t-link\t-\tLink");
+				System.out.println("\t-tag\t-\tTag");
 				return;
 			}
 			else if (args[0].equals("-m"))
 			{
 				bLogging = false;
-				for (int i = 1; i < args.length ; i++)
+				for (int i = 1; i < args.length - 1; i++)
 				{
 					if (args[i].equals("-a")) {
 						APP_NAME = args[++i];
@@ -566,8 +567,10 @@ public class SNMPTrapSender extends CustomNotification
 					if (trigger.CONDITION_UNIT_TYPE_x.contains("BASELINE_"))
 					{
 						trigger.USE_DEFAULT_BASELINE_x = args[param++];
-						trigger.BASELINE_NAME_x = args[param++];
-						trigger.BASELINE_ID_x = args[param++];
+						if(trigger.USE_DEFAULT_BASELINE_x.toLowerCase().equals("false")){
+							trigger.BASELINE_NAME_x = args[param++];
+							trigger.BASELINE_ID_x = args[param++];
+						}
 					}
 	
 					trigger.THRESHOLD_VALUE_x = args[param++];
