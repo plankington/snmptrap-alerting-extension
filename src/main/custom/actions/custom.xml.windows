@@ -1,0 +1,6 @@
+<custom-actions>
+	<action>
+		<type>SNMP Trap Sender</type>
+		<executable>snmpTrapSender.bat</executable>
+	</action>
+</custom-actions>
