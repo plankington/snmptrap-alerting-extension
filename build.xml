@@ -17,7 +17,7 @@
   <property name="lib.home" value="lib" />
   
   <!-- The directory where the scripts are placed -->
-  <property name="script.home" value="src/main/custom/actions/scripts"/>
+  <property name="script.home" value="src/main/custom/actions/send-snmp-trap"/>
   
   <!-- Compiles the classes directory to create jar file -->
   <property name="classes.dir" value="${build.home}/classes"/>
@@ -60,7 +60,7 @@
   <mkdir dir="${build.home}/temp/custom/logs"/>
   <mkdir dir="${build.home}/temp/custom/conf"/>
   <mkdir dir="${build.home}/temp/custom/actions"/>
-  <mkdir dir="${build.home}/temp/custom/actions/scripts"/>
+  <mkdir dir="${build.home}/temp/custom/actions/send-snmp-trap"/>
   <mkdir dir="${dist.home}"/>
 </target> 
 
@@ -112,11 +112,11 @@
     </then>             
   </else>
   </if>
-  <copy todir="${build.home}/temp/custom/actions/scripts">
+  <copy todir="${build.home}/temp/custom/actions/send-snmp-trap">
       <fileset dir="${script.home}" includes="snmpTrapSender.*"/>
   </copy>
   <chmod perm="a+x">
-      <fileset dir="${build.home}/temp/custom/actions/scripts" includes="snmpTrapSender.*"/>
+      <fileset dir="${build.home}/temp/custom/actions/send-snmp-trap" includes="snmpTrapSender.*"/>
   </chmod>
   <copy todir="${build.home}/temp/custom/conf/">
     <fileset file="${conf.home}/config.xml"/>

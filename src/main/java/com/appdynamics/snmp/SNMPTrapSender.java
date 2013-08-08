@@ -92,8 +92,10 @@ public class SNMPTrapSender extends CustomNotification
 		try
 		{
 			logInfo("Starting to parse config");
+			
+			String SNMPTrapSenderHome = System.getProperty("SNMP_TRAP_SENDER_HOME");
 
-			Map<String, String> config = parseXML("conf/config.xml");
+			Map<String, String> config = parseXML(SNMPTrapSenderHome + "/conf/config.xml");
 
 			logInfo("Parsing config complete");
 

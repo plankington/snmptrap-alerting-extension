@@ -17,4 +17,4 @@
 #
 ###
 
-java -Dlog4j.configuration=file:../../conf/log4j.xml -jar ../../lib/SNMPTrapSender.jar "$@"
+java -Dlog4j.configuration=file:../../conf/log4j.xml -DSNMP_TRAP_SENDER_HOME=../.. -jar ../../lib/SNMPTrapSender.jar "$@"
