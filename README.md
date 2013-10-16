@@ -148,6 +148,11 @@ To debug the code:
 
 2.  Open \<custom\_action\_directory\>/logs/snmpTrapSender.log
 
+##Testing
+
+If you'd like to send a test trap for Debug purpose please use the sendSampleTrap.sh script. This Script will send a simple Trap using the Action Configuration. You can use this to verify that the transmission works and the Trap would be received *without* the need of producing a real error or event.
+
+
 ##Using the jar file as a standalone
 
 The jar file can be used as a standalone. For information enter "--help" when running the jar:
