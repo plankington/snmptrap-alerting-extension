@@ -3,3 +3,9 @@
 # Package Files #
 *.war
 *.ear
+.ant_targets
+.idea/
+build/
+dist/
+src/main/main.iml
+tmp/
