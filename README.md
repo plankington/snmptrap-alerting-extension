@@ -135,6 +135,8 @@ as a custom action (see Installation).
 'Actions'. Click on the 'Create Action' button. Select 'Custom Action' and click OK. In the drop-down menu you
 can find the action called 'send-snmp-trap'.
 
+4. Use the MIB file \<Controller-install-dir\>/custom/conf/APPD-CTLR-MIB.mib to interpret the trap at the trap receiver.
+
 ##Debugging
 
 To debug the code:
