@@ -122,6 +122,7 @@
     <fileset file="${conf.home}/config.xml"/>
     <fileset file="${conf.home}/log4j.dtd"/>
     <fileset file="${conf.home}/log4j.xml"/>
+    <fileset file="${script.home}/APPD-CTLR-MIB.mib"/>
   </copy>
   <copy todir="${build.home}/temp/custom/lib/">
     <fileset  file="${dom4j}"/>
