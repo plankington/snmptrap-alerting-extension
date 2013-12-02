@@ -1,15 +1,20 @@
 # Using the AppDynamics SNMP Alerting Extension with Nagios
 
-## still under review
 
-Sending SNMP Traps from the AppDynamics SNMPTrap alerting extension to Nagios requires configuring Nagios, Net-SNMP, SNMPTT and Nagios SNMP Trap Interface (NSTI).
+You can send SNMP Traps from the AppDynamics SNMPTrap alerting extension to Nagios. Doing so requires configuring Nagios, Net-SNMP, SNMPTT, and Nagios SNMP Trap Interface (NSTI). This document details how to perform these configuration tasks.
+
 The following illustration shows how SNMPTT works:
-
+<br />
+  
 ![](https://raw.github.com/Appdynamics/snmptrap-alerting-extension/master/integration_01.png)
 
+<br />
+
 This is how the implementation works after the integration:
+<br />
 
 ![](https://raw.github.com/Appdynamics/snmptrap-alerting-extension/master/integration_02.png)
+<br />
 
 Basically all traps received by Net-SNMP’s snmptrapd service are written to files. The service then invokes the snmpttraphandler script, which calls the snmptt service. The snmptt service parses the trap from files. 
 
@@ -413,6 +418,7 @@ After NSTI is up and running, you can view the interface by using the following 
 
 You should see something like this:
 
+<br />
 ![](https://raw.github.com/Appdynamics/snmptrap-alerting-extension/master/integration_03.png)
 
 You can now use the snmptrapd-alerting-extension downloaded earlier to send traps. For more details about this extension, see the [AppSphere Exchange](http://appsphere.appdynamics.com/t5/eXchange/SNMP-Trap-Alerting-Extension/idi-p/825).
