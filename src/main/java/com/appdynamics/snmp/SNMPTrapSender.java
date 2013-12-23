@@ -120,20 +120,44 @@ public class SNMPTrapSender extends CustomNotification
 
 			logInfo("Finished parsing arguments");
 
-			ADSnmpData snmpData = new ADSnmpData();
-			snmpData.application = APP_NAME;
-			snmpData.triggeredBy = POLICY_NAME;
-			snmpData.nodes = NODES;
-			snmpData.BTs = BTs;
-			snmpData.machines = MACHINES;
-			snmpData.tiers = TIERS;
-			snmpData.eventTime = PVN_ALERT_TIME;
-			snmpData.severity = SEVERITY;
-			snmpData.type = AFFECTED_ENTITY_TYPE;
-			snmpData.subtype = " ";
-			snmpData.summary = SUMMARY_MESSAGE;
-			snmpData.link = DEEP_LINK_URL;
-			snmpData.tag = TAG;
+            ADSnmpData snmpData = new ADSnmpData();
+            if (IS_HEALTH_RULE_VIOLATION) {
+                snmpData.application = APP_NAME;
+                snmpData.triggeredBy = POLICY_NAME;
+                snmpData.nodes = NODES;
+                snmpData.BTs = BTs;
+                snmpData.machines = MACHINES;
+                snmpData.tiers = TIERS;
+                snmpData.eventTime = PVN_ALERT_TIME;
+                snmpData.severity = SEVERITY;
+                snmpData.type = AFFECTED_ENTITY_TYPE;
+                snmpData.subtype = " ";
+                snmpData.summary = SUMMARY_MESSAGE;
+                snmpData.link = DEEP_LINK_URL;
+                snmpData.tag = TAG;
+            } else {
+                snmpData.application = APP_NAME;
+                snmpData.triggeredBy = EN_NAME;
+                snmpData.nodes = " ";
+                snmpData.BTs = " ";
+                snmpData.machines = " ";
+                snmpData.tiers = " ";
+                snmpData.eventTime = EN_TIME;
+                snmpData.severity = SEVERITY;
+                String types = "";
+                for (Event_Type type : event_types){
+                    types += type.EVENT_TYPE + " ";
+                }
+                snmpData.type = types;
+                snmpData.subtype = " ";
+                String summaries = "";
+                for (Event_Summary summary : event_summaries){
+                    summaries += summary.EVENT_SUMMARY_STRING + ". ";
+                }
+                snmpData.summary = summaries;
+                snmpData.link = DEEP_LINK_URL;
+                snmpData.tag = TAG;
+            }
 
 			logInfo("------------SNMP Trap Data-------------");
 			for (Field field : snmpData.getClass().getFields())
@@ -485,131 +509,211 @@ public class SNMPTrapSender extends CustomNotification
 				}
 				return;
 			}
-	
-			int param = 0;
-			APP_NAME = args[param++];
-			APP_ID = args[param++];
-			PVN_ALERT_TIME = args[param++];
-			PRIORITY = args[param++];
-			SEVERITY = args[param++];
-			TAG = args[param++];
-			POLICY_NAME = args[param++];
-			POLICY_ID = args[param++];
-			PVN_TIME_PERIOD_IN_MINUTES = args[param++];
-			AFFECTED_ENTITY_TYPE = args[param++];
-			AFFECTED_ENTITY_NAME = args[param++];
-			AFFECTED_ENTITY_ID = args[param++];
-			NUMBER_OF_EVALUATION_ENTITIES = Integer.parseInt(args[param++]);
-	
-			if (bLogging)
-			{
-				logger.info("------------PARSING------------");
-				logger.info("APP_NAME: " + APP_NAME);
-				logger.info("APP_ID: " + APP_ID);
-				logger.info("PVN_ALERT_TIME: " + PVN_ALERT_TIME);
-				logger.info("PRIORITY: " + PRIORITY);
-				logger.info("SEVERITY: " + SEVERITY);
-				logger.info("TAG: " + TAG);
-				logger.info("POLICY_NAME: " + POLICY_NAME);
-				logger.info("POLICY_ID: " + POLICY_ID);
-				logger.info("PVN_TIME_PERIOD_IN_MINUTES: " + PVN_TIME_PERIOD_IN_MINUTES);
-				logger.info("AFFECTED_ENTITY_TYPE: " + AFFECTED_ENTITY_TYPE);
-				logger.info("AFFECTED_ENTITY_NAME: " + AFFECTED_ENTITY_NAME);
-				logger.info("AFFECTED_ENTITY_ID: " + AFFECTED_ENTITY_ID);
-				logger.info("NUMBER_OF_EVALUATION_ENTITIES: " + NUMBER_OF_EVALUATION_ENTITIES);
-			}
-	
-			entities = new ArrayList<Evaluation_Entity>();
-			for (int i = 0; i < NUMBER_OF_EVALUATION_ENTITIES; i++)
-			{
-				Evaluation_Entity entity = new Evaluation_Entity();
-				entity.EVALUATION_ENTITY_TYPE = args[param++];
-	
-				entity.EVALUATION_ENTITY_NAME = args[param++];
-	
-				entity.EVALUATION_ENTITY_ID = args[param++];
-	
-				if (entity.EVALUATION_ENTITY_TYPE.contains("APPLICATION_COMPONENT_NODE"))
-					NODES += entity.EVALUATION_ENTITY_NAME + " ";
-				else if (entity.EVALUATION_ENTITY_TYPE.contains("APPLICATION_COMPONENT"))
-					TIERS += entity.EVALUATION_ENTITY_NAME + " ";
-				else if (entity.EVALUATION_ENTITY_TYPE.contains("MACHINE_INSTANCE"))
-					MACHINES += entity.EVALUATION_ENTITY_NAME + " ";
-				else if (entity.EVALUATION_ENTITY_TYPE.contains("BUSINESS_TRANSACTION"))
-					BTs += entity.EVALUATION_ENTITY_NAME + " ";
-				else if (AFFECTED_ENTITY_TYPE.contains("BUSINESS_TRANSACTION"))
-					BTs += AFFECTED_ENTITY_NAME + " ";
-	
-				entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY = Integer.parseInt(args[param++]);
-	
-				if (bLogging)
-				{
-					logger.info("NODES: " + NODES);
-					logger.info("TIERS: " + TIERS);
-					logger.info("MACHINES: " + MACHINES);
-					logger.info("BTs: " + BTs);
-					logger.info("entity.EVALUATION_ENTITY_TYPE: " + entity.EVALUATION_ENTITY_TYPE);
-					logger.info("entity.EVALUATION_ENTITY_NAME: " + entity.EVALUATION_ENTITY_NAME);
-					logger.info("entity.EVALUATION_ENTITY_ID: " + entity.EVALUATION_ENTITY_ID);
-					logger.info("entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY: " + entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY);
-				}
-	
-				entity.triggers = new ArrayList<Triggered_Condition>();
-				for (int j = 0; j < entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY; j++)
-				{
-					Triggered_Condition trigger = new Triggered_Condition();
-					trigger.SCOPE_TYPE_x = args[param++];
-					trigger.SCOPE_NAME_x = args[param++];
-					trigger.SCOPE_ID_x = args[param++];
-					trigger.CONDITION_NAME_x = args[param++];
-					trigger.CONDITION_ID_x = args[param++];
-					trigger.OPERATOR_x = args[param++];
-					trigger.CONDITION_UNIT_TYPE_x = args[param++];
-	
-					if (trigger.CONDITION_UNIT_TYPE_x.contains("BASELINE_"))
-					{
-						trigger.USE_DEFAULT_BASELINE_x = args[param++];
-						if(trigger.USE_DEFAULT_BASELINE_x.toLowerCase().equals("false")){
-							trigger.BASELINE_NAME_x = args[param++];
-							trigger.BASELINE_ID_x = args[param++];
-						}
-					}
-	
-					trigger.THRESHOLD_VALUE_x = args[param++];
-					trigger.OBSERVED_VALUE_x = args[param++];
-	
-					if (bLogging)
-					{
-						logger.info("trigger.SCOPE_TYPE_x: " + trigger.SCOPE_TYPE_x);
-						logger.info("trigger.SCOPE_NAME_x: " + trigger.SCOPE_NAME_x);
-						logger.info("trigger.SCOPE_ID_x: " + trigger.SCOPE_ID_x);
-						logger.info("trigger.CONDITION_NAME_x: " + trigger.CONDITION_NAME_x);
-						logger.info("trigger.CONDITION_ID_x: " + trigger.CONDITION_ID_x);
-						logger.info("trigger.OPERATOR_x: " + trigger.OPERATOR_x);
-						logger.info("trigger.CONDITION_UNIT_TYPE_x: " + trigger.CONDITION_UNIT_TYPE_x);
-						logger.info("trigger.USE_DEFAULT_BASELINE_x: " + trigger.USE_DEFAULT_BASELINE_x);
-						logger.info("trigger.BASELINE_NAME_x: " + trigger.BASELINE_NAME_x);
-						logger.info("trigger.BASELINE_NAME_x: " + trigger.BASELINE_NAME_x);
-						logger.info("trigger.THRESHOLD_VALUE_x: " + trigger.THRESHOLD_VALUE_x);
-						logger.info("trigger.OBSERVED_VALUE_x: " + trigger.OBSERVED_VALUE_x);
-					}
-					
-					entity.triggers.add(trigger);
-				}
-				entities.add(entity);
-			}
-	
-			SUMMARY_MESSAGE = args[param++];
-			INCIDENT_ID = args[param++];
-			DEEP_LINK_URL = args[param++] + INCIDENT_ID;
-	
-			if (bLogging)
-			{
-				logger.info("SUMMARY_MESSAGE: " + SUMMARY_MESSAGE);
-				logger.info("INCIDENT_ID: " + INCIDENT_ID);
-				logger.info("DEEP_LINK_URL: " + DEEP_LINK_URL);
-				logger.info("_______________________________________");
-			}
+
+            int param = 0;
+            if (args[args.length-1].startsWith("http")){    //other events
+                IS_HEALTH_RULE_VIOLATION = false;
+
+                APP_NAME = args[param++];
+                APP_ID = args[param++];
+                EN_TIME = args[param++];
+                PRIORITY = args[param++];
+                SEVERITY = args[param++];
+                TAG = args[param++];
+                EN_NAME = args[param++];
+                EN_ID = args[param++];
+                EN_INTERVAL_IN_MINUTES = args[param++];
+                NUMBER_OF_EVENT_TYPES = Integer.parseInt(args[param++]);
+
+                if (bLogging)
+                {
+                    logger.info("------------PARSING------------");
+                    logger.info("APP_NAME: " + APP_NAME);
+                    logger.info("APP_ID: " + APP_ID);
+                    logger.info("EN_TIME: " + EN_TIME);
+                    logger.info("PRIORITY: " + PRIORITY);
+                    logger.info("SEVERITY: " + SEVERITY);
+                    logger.info("TAG: " + TAG);
+                    logger.info("EN_NAME: " + EN_NAME);
+                    logger.info("EN_ID: " + EN_ID);
+                    logger.info("EN_INTERVAL_IN_MINUTES: " + EN_INTERVAL_IN_MINUTES);
+                    logger.info("NUMBER_OF_EVENT_TYPES: " + NUMBER_OF_EVENT_TYPES);
+                }
+
+                event_types = new ArrayList<Event_Type>();
+                for (int i = 0; i < NUMBER_OF_EVENT_TYPES; i++) {
+                    Event_Type event_type = new Event_Type();
+                    event_type.EVENT_TYPE = args[param++];
+                    event_type.EVENT_TYPE_NUM = Integer.parseInt(args[param++]);
+                    event_types.add(event_type);
+
+                    if (bLogging)
+                    {
+                        logger.info("event_type.EVENT_TYPE: " + event_type.EVENT_TYPE);
+                        logger.info("event_type.EVENT_TYPE_NUM: " + event_type.EVENT_TYPE_NUM);
+                    }
+                }
+
+                NUMBER_OF_EVENT_SUMMARIES = Integer.parseInt(args[param++]);
+
+                event_summaries = new ArrayList<Event_Summary>();
+                for (int i = 0; i < NUMBER_OF_EVENT_SUMMARIES; i++) {
+                    Event_Summary event_summary = new Event_Summary();
+                    event_summary.EVENT_SUMMARY_ID = args[param++];
+                    event_summary.EVENT_SUMMARY_TIME = args[param++];
+                    event_summary.EVENT_SUMMARY_TYPE = args[param++];
+                    event_summary.EVENT_SUMMARY_SEVERITY = args[param++];
+                    event_summary.EVENT_SUMMARY_STRING = args[param++];
+                    event_summaries.add(event_summary);
+
+                    if (bLogging)
+                    {
+                        logger.info("event_summary.EVENT_SUMMARY_ID: " + event_summary.EVENT_SUMMARY_ID);
+                        logger.info("event_summary.EVENT_SUMMARY_TIME: " + event_summary.EVENT_SUMMARY_TIME);
+                        logger.info("event_summary.EVENT_SUMMARY_TYPE: " + event_summary.EVENT_SUMMARY_TYPE);
+                        logger.info("event_summary.EVENT_SUMMARY_SEVERITY: " + event_summary.EVENT_SUMMARY_SEVERITY);
+                        logger.info("event_summary.EVENT_SUMMARY_STRING: " + event_summary.EVENT_SUMMARY_STRING);
+                    }
+                }
+
+                DEEP_LINK_URL = args[param] + EN_ID;
+
+                if (bLogging)
+                {
+                    logger.info("DEEP_LINK_URL: " + DEEP_LINK_URL);
+                    logger.info("_______________________________________");
+                }
+
+
+
+            } else {    //health rule violation
+                IS_HEALTH_RULE_VIOLATION = true;
+
+                APP_NAME = args[param++];
+                APP_ID = args[param++];
+                PVN_ALERT_TIME = args[param++];
+                PRIORITY = args[param++];
+                SEVERITY = args[param++];
+                TAG = args[param++];
+                POLICY_NAME = args[param++];
+                POLICY_ID = args[param++];
+                PVN_TIME_PERIOD_IN_MINUTES = args[param++];
+                AFFECTED_ENTITY_TYPE = args[param++];
+                AFFECTED_ENTITY_NAME = args[param++];
+                AFFECTED_ENTITY_ID = args[param++];
+                NUMBER_OF_EVALUATION_ENTITIES = Integer.parseInt(args[param++]);
+
+                if (bLogging)
+                {
+                    logger.info("------------PARSING------------");
+                    logger.info("APP_NAME: " + APP_NAME);
+                    logger.info("APP_ID: " + APP_ID);
+                    logger.info("PVN_ALERT_TIME: " + PVN_ALERT_TIME);
+                    logger.info("PRIORITY: " + PRIORITY);
+                    logger.info("SEVERITY: " + SEVERITY);
+                    logger.info("TAG: " + TAG);
+                    logger.info("POLICY_NAME: " + POLICY_NAME);
+                    logger.info("POLICY_ID: " + POLICY_ID);
+                    logger.info("PVN_TIME_PERIOD_IN_MINUTES: " + PVN_TIME_PERIOD_IN_MINUTES);
+                    logger.info("AFFECTED_ENTITY_TYPE: " + AFFECTED_ENTITY_TYPE);
+                    logger.info("AFFECTED_ENTITY_NAME: " + AFFECTED_ENTITY_NAME);
+                    logger.info("AFFECTED_ENTITY_ID: " + AFFECTED_ENTITY_ID);
+                    logger.info("NUMBER_OF_EVALUATION_ENTITIES: " + NUMBER_OF_EVALUATION_ENTITIES);
+                }
+
+                entities = new ArrayList<Evaluation_Entity>();
+                for (int i = 0; i < NUMBER_OF_EVALUATION_ENTITIES; i++)
+                {
+                    Evaluation_Entity entity = new Evaluation_Entity();
+                    entity.EVALUATION_ENTITY_TYPE = args[param++];
+
+                    entity.EVALUATION_ENTITY_NAME = args[param++];
+
+                    entity.EVALUATION_ENTITY_ID = args[param++];
+
+                    if (entity.EVALUATION_ENTITY_TYPE.contains("APPLICATION_COMPONENT_NODE"))
+                        NODES += entity.EVALUATION_ENTITY_NAME + " ";
+                    else if (entity.EVALUATION_ENTITY_TYPE.contains("APPLICATION_COMPONENT"))
+                        TIERS += entity.EVALUATION_ENTITY_NAME + " ";
+                    else if (entity.EVALUATION_ENTITY_TYPE.contains("MACHINE_INSTANCE"))
+                        MACHINES += entity.EVALUATION_ENTITY_NAME + " ";
+                    else if (entity.EVALUATION_ENTITY_TYPE.contains("BUSINESS_TRANSACTION"))
+                        BTs += entity.EVALUATION_ENTITY_NAME + " ";
+                    else if (AFFECTED_ENTITY_TYPE.contains("BUSINESS_TRANSACTION"))
+                        BTs += AFFECTED_ENTITY_NAME + " ";
+
+                    entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY = Integer.parseInt(args[param++]);
+
+                    if (bLogging)
+                    {
+                        logger.info("NODES: " + NODES);
+                        logger.info("TIERS: " + TIERS);
+                        logger.info("MACHINES: " + MACHINES);
+                        logger.info("BTs: " + BTs);
+                        logger.info("entity.EVALUATION_ENTITY_TYPE: " + entity.EVALUATION_ENTITY_TYPE);
+                        logger.info("entity.EVALUATION_ENTITY_NAME: " + entity.EVALUATION_ENTITY_NAME);
+                        logger.info("entity.EVALUATION_ENTITY_ID: " + entity.EVALUATION_ENTITY_ID);
+                        logger.info("entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY: " + entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY);
+                    }
+
+                    entity.triggers = new ArrayList<Triggered_Condition>();
+                    for (int j = 0; j < entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY; j++)
+                    {
+                        Triggered_Condition trigger = new Triggered_Condition();
+                        trigger.SCOPE_TYPE_x = args[param++];
+                        trigger.SCOPE_NAME_x = args[param++];
+                        trigger.SCOPE_ID_x = args[param++];
+                        trigger.CONDITION_NAME_x = args[param++];
+                        trigger.CONDITION_ID_x = args[param++];
+                        trigger.OPERATOR_x = args[param++];
+                        trigger.CONDITION_UNIT_TYPE_x = args[param++];
+
+                        if (trigger.CONDITION_UNIT_TYPE_x.contains("BASELINE_"))
+                        {
+                            trigger.USE_DEFAULT_BASELINE_x = args[param++];
+                            if(trigger.USE_DEFAULT_BASELINE_x.toLowerCase().equals("false")){
+                                trigger.BASELINE_NAME_x = args[param++];
+                                trigger.BASELINE_ID_x = args[param++];
+                            }
+                        }
+
+                        trigger.THRESHOLD_VALUE_x = args[param++];
+                        trigger.OBSERVED_VALUE_x = args[param++];
+
+                        if (bLogging)
+                        {
+                            logger.info("trigger.SCOPE_TYPE_x: " + trigger.SCOPE_TYPE_x);
+                            logger.info("trigger.SCOPE_NAME_x: " + trigger.SCOPE_NAME_x);
+                            logger.info("trigger.SCOPE_ID_x: " + trigger.SCOPE_ID_x);
+                            logger.info("trigger.CONDITION_NAME_x: " + trigger.CONDITION_NAME_x);
+                            logger.info("trigger.CONDITION_ID_x: " + trigger.CONDITION_ID_x);
+                            logger.info("trigger.OPERATOR_x: " + trigger.OPERATOR_x);
+                            logger.info("trigger.CONDITION_UNIT_TYPE_x: " + trigger.CONDITION_UNIT_TYPE_x);
+                            logger.info("trigger.USE_DEFAULT_BASELINE_x: " + trigger.USE_DEFAULT_BASELINE_x);
+                            logger.info("trigger.BASELINE_NAME_x: " + trigger.BASELINE_NAME_x);
+                            logger.info("trigger.BASELINE_NAME_x: " + trigger.BASELINE_NAME_x);
+                            logger.info("trigger.THRESHOLD_VALUE_x: " + trigger.THRESHOLD_VALUE_x);
+                            logger.info("trigger.OBSERVED_VALUE_x: " + trigger.OBSERVED_VALUE_x);
+                        }
+
+                        entity.triggers.add(trigger);
+                    }
+                    entities.add(entity);
+                }
+
+                SUMMARY_MESSAGE = args[param++];
+                INCIDENT_ID = args[param++];
+                DEEP_LINK_URL = args[param++] + INCIDENT_ID;
+
+                if (bLogging)
+                {
+                    logger.info("SUMMARY_MESSAGE: " + SUMMARY_MESSAGE);
+                    logger.info("INCIDENT_ID: " + INCIDENT_ID);
+                    logger.info("DEEP_LINK_URL: " + DEEP_LINK_URL);
+                    logger.info("_______________________________________");
+                }
+            }
+
 		}
 		catch (Exception e) {
 			throw new DataFormatException(e.toString());

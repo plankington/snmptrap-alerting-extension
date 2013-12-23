@@ -23,6 +23,8 @@ import java.util.ArrayList;
 
 public class CustomNotification
 {
+    protected static boolean IS_HEALTH_RULE_VIOLATION;
+
 	protected static String APP_NAME="";
 	protected static String APP_ID="";
 	protected static String PVN_ALERT_TIME="";
@@ -38,7 +40,16 @@ public class CustomNotification
 	protected static Integer NUMBER_OF_EVALUATION_ENTITIES;
 	protected static ArrayList<Evaluation_Entity> entities;
 
-	protected static class Evaluation_Entity
+    protected static String EN_TIME="";
+    protected static String EN_NAME="";
+    protected static String EN_ID="";
+    protected static String EN_INTERVAL_IN_MINUTES="";
+    protected static Integer NUMBER_OF_EVENT_TYPES;
+    protected static ArrayList<Event_Type> event_types;
+    protected static Integer NUMBER_OF_EVENT_SUMMARIES;
+    protected static ArrayList<Event_Summary> event_summaries;
+
+    protected static class Evaluation_Entity
 	{
 		public Evaluation_Entity() {}
 		public String EVALUATION_ENTITY_TYPE="";
@@ -46,7 +57,22 @@ public class CustomNotification
 		public String EVALUATION_ENTITY_ID="";
 		public Integer NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY;
 		public ArrayList<Triggered_Condition> triggers;
-	};
+	}
+
+    protected static class Event_Type {
+        public Event_Type() {}
+        public String EVENT_TYPE="";
+        public Integer EVENT_TYPE_NUM;
+    }
+
+    protected static class Event_Summary {
+        public Event_Summary() {}
+        public String EVENT_SUMMARY_ID="";
+        public String EVENT_SUMMARY_TIME="";
+        public String EVENT_SUMMARY_TYPE="";
+        public String EVENT_SUMMARY_SEVERITY="";
+        public String EVENT_SUMMARY_STRING="";
+    }
 
 	protected static class Triggered_Condition {
 		public Triggered_Condition() {};
@@ -62,7 +88,7 @@ public class CustomNotification
 		public String BASELINE_ID_x="";
 		public String THRESHOLD_VALUE_x="";
 		public String OBSERVED_VALUE_x="";
-	};
+	}
 
 	protected static String SUMMARY_MESSAGE="";
 	protected static String INCIDENT_ID="";
