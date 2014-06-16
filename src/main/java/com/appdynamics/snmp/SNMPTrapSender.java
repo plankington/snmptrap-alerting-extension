@@ -135,6 +135,7 @@ public class SNMPTrapSender extends CustomNotification
                 snmpData.summary = SUMMARY_MESSAGE;
                 snmpData.link = DEEP_LINK_URL;
                 snmpData.tag = TAG;
+                snmpData.eventType = HR_EVENT_TYPE;
             } else {
                 snmpData.application = APP_NAME;
                 snmpData.triggeredBy = EN_NAME;
@@ -704,12 +705,13 @@ public class SNMPTrapSender extends CustomNotification
                 SUMMARY_MESSAGE = args[param++];
                 INCIDENT_ID = args[param++];
                 DEEP_LINK_URL = args[param++] + INCIDENT_ID;
-
+                HR_EVENT_TYPE = args[param++];
                 if (bLogging)
                 {
                     logger.info("SUMMARY_MESSAGE: " + SUMMARY_MESSAGE);
                     logger.info("INCIDENT_ID: " + INCIDENT_ID);
                     logger.info("DEEP_LINK_URL: " + DEEP_LINK_URL);
+                    logger.info("HR_EVENT_TYPE: " + HR_EVENT_TYPE);
                     logger.info("_______________________________________");
                 }
             }

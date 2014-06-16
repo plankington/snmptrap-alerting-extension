@@ -41,7 +41,8 @@ public class Lookup
 		"subtype",
 		"summary",
 		"link",
-		"tag"
+		"tag",
+		"eventType"
 	};
 
 	public Lookup ()

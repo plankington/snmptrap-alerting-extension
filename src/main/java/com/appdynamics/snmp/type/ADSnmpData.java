@@ -37,4 +37,5 @@ public class ADSnmpData
 	public String summary;
 	public String link;
 	public String tag;
+	public String eventType;
 }

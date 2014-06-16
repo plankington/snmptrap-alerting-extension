@@ -93,6 +93,7 @@ public class CustomNotification
 	protected static String SUMMARY_MESSAGE="";
 	protected static String INCIDENT_ID="";
 	protected static String DEEP_LINK_URL="";
+	protected static String HR_EVENT_TYPE = "";
 
 	protected static String NODES="";
 	protected static String TIERS="";

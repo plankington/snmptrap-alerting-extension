@@ -9,7 +9,8 @@
 	-type "BUSINESS_TRANSACTION" \
 	-summ "TEST Message 1111./snmpTrapSender.sh -h" \
 	-link "http://www.google.de" \
-	-tag "DumpTester"
+	-tag "DumpTester" \
+	-eventType "POLICY_OPEN"
 
 # ./snmpTrapSender.sh -m -a "Base App" 
 #	-trig "OppsTest" # Policy which triggers 
