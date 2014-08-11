@@ -55,12 +55,8 @@
   <mkdir dir="${build.home}"/>
   <mkdir dir="${build.home}/classes"/>
   <mkdir dir="${build.home}/temp"/>
-  <mkdir dir="${build.home}/temp/custom"/>
-  <mkdir dir="${build.home}/temp/custom/lib"/>
-  <mkdir dir="${build.home}/temp/custom/logs"/>
-  <mkdir dir="${build.home}/temp/custom/conf"/>
-  <mkdir dir="${build.home}/temp/custom/actions"/>
-  <mkdir dir="${build.home}/temp/custom/actions/send-snmp-trap"/>
+  <mkdir dir="${build.home}/temp/lib"/>
+  <mkdir dir="${build.home}/temp/conf"/>
   <mkdir dir="${dist.home}"/>
 </target> 
 
@@ -76,7 +72,7 @@
 <target name="build" description="Create jar and MANIFEST.MF" depends="compile">
    
    <!-- create the jar -->
-   <jar jarfile="${build.home}/temp/custom/lib/${jar.name}" basedir="${build.home}/classes">
+   <jar jarfile="${build.home}/temp/lib/${jar.name}" basedir="${build.home}/classes">
 
     <manifest>
       <attribute name="Built-By" value="${user.name}" />
@@ -93,38 +89,19 @@
 
 
 <target name="package" depends="build">
-  <if>
-      <or>
-        <os family="unix" />
-        <os family="mac" />
-      </or>
-    <then>
-      <copy tofile="${build.home}/temp/custom/actions/custom.xml" file="${custom.actions}/custom.xml.linux" />        
-    </then>
-  <elseif> <os family="windows" />
-    <then>
-      <copy tofile="${build.home}/temp/custom/actions/custom.xml" file="${custom.actions}/custom.xml.windows" />        
-    </then>
-  </elseif>
-  <else>
-    <then>
-      <copy tofile="${build.home}/temp/custom/actions/custom.xml" file="${custom.actions}/custom.xml.linux" />
-    </then>             
-  </else>
-  </if>
-  <copy todir="${build.home}/temp/custom/actions/send-snmp-trap">
+  <copy todir="${build.home}/temp/">
       <fileset dir="${script.home}" includes="snmpTrapSender.*"/>
   </copy>
   <chmod perm="a+x">
-      <fileset dir="${build.home}/temp/custom/actions/send-snmp-trap" includes="snmpTrapSender.*"/>
+      <fileset dir="${build.home}/temp/" includes="snmpTrapSender.*"/>
   </chmod>
-  <copy todir="${build.home}/temp/custom/conf/">
+  <copy todir="${build.home}/temp/conf/">
     <fileset file="${conf.home}/config.xml"/>
     <fileset file="${conf.home}/log4j.dtd"/>
     <fileset file="${conf.home}/log4j.xml"/>
     <fileset file="${script.home}/APPD-CTLR-MIB.mib"/>
   </copy>
-  <copy todir="${build.home}/temp/custom/lib/">
+  <copy todir="${build.home}/temp/lib/">
     <fileset  file="${dom4j}"/>
     <fileset  file="${log4j}"/>
     <fileset  file="${snmp4j}"/>
