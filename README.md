@@ -15,17 +15,39 @@ as a custom action (see Installation).
 
 ##Installation
 
-1. Deploy into Controller directory
+1. Download the SNMPTrapAlertingExtension zip from [AppDynamics Exchange](http://community.appdynamics.com/t5/AppDynamics-eXchange/idb-p/extensions)  
 
-    1.1  Either download the SNMPTrapAlertingExtension.zip file from [AppSphere](http://appsphere.appdynamics.com/t5/Extensions/SNMP-Trap-Alerting-Extension/idi-p/825)
-    or type "ant package" (without the quotes) in the root directory of the cloned repository and find the zip file in the 'dist' directory.
-    
-    1.2  Copy the zip file into the \<Controller-install-dir\> directory. Unzip the file. You will see a prompt if you already have a custom.xml
-    in the \<Controller-install-dir\>/custom/actions/ directory, don't let the unzip process overwrite it. Instead, merge
-    the contents.
-    
-2. cd into \<Controller-install-dir\>/custom/conf/ and edit the config.xml configuration file:
+2. Unzip the SNMPTrapAlertingExtension.zip file into <CONTROLLER_HOME_DIR>/custom/actions/ . You should have <CONTROLLER_HOME_DIR>/custom/actions/SNMPTrapAlertingExtension created. 
 
+3. Check if you have custom.xml file in <CONTROLLER_HOME_DIR>/custom/actions/ directory. If yes, add the following xml to the <custom-actions> element.
+    
+        ```
+            <action>
+                 <type>SNMPTrapAlertingExtension</type>
+                 <!-- For Linux/Unix *.sh -->
+                 <executable>snmpTrapSender.sh</executable>
+                 <!-- For windows *.bat -->
+                 <!--<executable>snmpTrapSender.bat</executable>-->
+            </action>
+        ```
+     If you don't have custom.xml already, create one with the below xml content. 
+     
+     ```
+            <custom-actions>
+            <action>
+                 <type>SNMPTrapAlertingExtension</type>
+                 <!-- For Linux/Unix *.sh -->
+                 <executable>snmpTrapSender.sh</executable>
+                 <!-- For windows *.bat -->
+                 <!--<executable>snmpTrapSender.bat</executable>-->
+            </action>
+            </custom-actions>
+     ```
+     Uncomment the appropriate executable tag based on windows or linux/unix machine.
+     
+ 4. cd into <Controller-install-dir>/custom/conf/SNMPTrapAlertingExtension and edit the config.xml configuration file.
+ 
+ 
 	###Parameters
 	<table>
 	<tbody>
@@ -131,11 +153,10 @@ as a custom action (see Installation).
 	         
 	~~~~
 	
-3.  Now you are ready to use this extension as a custom action. In the AppDynamics UI, go to 'Alert & Respond' -> 
-'Actions'. Click on the 'Create Action' button. Select 'Custom Action' and click OK. In the drop-down menu you
-can find the action called 'send-snmp-trap'.
+5. Now you are ready to use this extension as a custom action. In the AppDynamics UI, go to 'Alert & Respond' -> 'Actions'. 
+   Click on the 'Create Action' button. Select 'Custom Action' and click OK. In the drop-down menu you can find the action called 'SNMPTrapAlertingExtension'.
 
-4. Use the MIB file \<Controller-install-dir\>/custom/conf/APPD-CTLR-MIB.mib to interpret the trap at the trap receiver.
+6. Use the MIB file <CONTROLLER_HOME_DIR>/custom/actions/SNMPTrapAlertingExtension/conf/APPD-CTLR-MIB.mib to interpret the trap at the trap receiver.
 
 ##Debugging
 
@@ -159,9 +180,16 @@ If you'd like to send a test trap for Debug purpose please use the sendSampleTra
 
 The jar file can be used as a standalone. For information enter "--help" when running the jar:
 
-	~~~~
-    java -jar SNMPTrapSender.jar --help
-   	~~~~
+	```
+    For Windows,
+    
+    ..\..\..\jdk\bin\java -Dlog4j.configuration=file:conf\log4j.xml -DSNMP_TRAP_SENDER_HOME=. -jar .\lib\SNMPTrapSender.jar --help
+    
+    
+    For Linux/Unix,
+    
+    ../../../jdk/bin/java -Dlog4j.configuration=file:conf/log4j.xml -DSNMP_TRAP_SENDER_HOME=. -jar ./lib/SNMPTrapSender.jar --help
+   	```
 
 
 
