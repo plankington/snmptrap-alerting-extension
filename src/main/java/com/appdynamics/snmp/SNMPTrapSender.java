@@ -146,14 +146,18 @@ public class SNMPTrapSender extends CustomNotification
                 snmpData.eventTime = EN_TIME;
                 snmpData.severity = SEVERITY;
                 String types = "";
-                for (Event_Type type : event_types){
-                    types += type.EVENT_TYPE + " ";
+                if(event_types != null) {
+                    for (Event_Type type : event_types) {
+                        types += type.EVENT_TYPE + " ";
+                    }
                 }
                 snmpData.type = types;
                 snmpData.subtype = " ";
                 String summaries = "";
-                for (Event_Summary summary : event_summaries){
-                    summaries += summary.EVENT_SUMMARY_STRING + ". ";
+                if(event_summaries != null) {
+                    for (Event_Summary summary : event_summaries) {
+                        summaries += summary.EVENT_SUMMARY_STRING + ". ";
+                    }
                 }
                 snmpData.summary = summaries;
                 snmpData.link = DEEP_LINK_URL;
@@ -163,7 +167,9 @@ public class SNMPTrapSender extends CustomNotification
 			logInfo("------------SNMP Trap Data-------------");
 			for (Field field : snmpData.getClass().getFields())
 			{
-				logInfo(field.getName() + ": " + field.get(snmpData).toString());
+				if(field.getName() != null && field.get(snmpData) != null) {
+                    logInfo(field.getName() + ": " + field.get(snmpData).toString());
+                }
 			}
 			logInfo("--------------------------------------");
 			logInfo("------------Sending Trap--------------");
@@ -404,12 +410,13 @@ public class SNMPTrapSender extends CustomNotification
 
 		for (Field field : snmpData.getClass().getDeclaredFields())
 		{
-			Object snmpVal = new OctetString(field.get(snmpData).toString());
+            if(field.get(snmpData) != null) {
+                Object snmpVal = new OctetString(field.get(snmpData).toString());
 
-			if (!(snmpVal.equals(" ") || snmpVal.equals("")))
-			{
-				pdu.add(new VariableBinding(new OID(lookup.getOID(field.getName())) , new OctetString(snmpVal.toString())));
-			}
+                if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
+                    pdu.add(new VariableBinding(new OID(lookup.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                }
+            }
 		}
 
 		snmp.send(pdu, usrTarget);

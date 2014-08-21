@@ -91,9 +91,10 @@
 <target name="package" depends="build">
   <copy todir="${build.home}/temp/">
       <fileset dir="${script.home}" includes="snmpTrapSender.*"/>
+      <fileset dir="${script.home}" includes="test_snmpTrapSender*.*"/>
   </copy>
   <chmod perm="a+x">
-      <fileset dir="${build.home}/temp/" includes="snmpTrapSender.*"/>
+      <fileset dir="${build.home}/temp/" includes="test_snmpTrapSender*.*"/>
   </chmod>
   <copy todir="${build.home}/temp/conf/">
     <fileset file="${conf.home}/config.xml"/>
