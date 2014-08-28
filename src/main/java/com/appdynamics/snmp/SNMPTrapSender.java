@@ -241,12 +241,13 @@ public class SNMPTrapSender extends CustomNotification
 
 		for (Field field : snmpData.getClass().getDeclaredFields())
 		{
-			Object snmpVal = new OctetString(field.get(snmpData).toString());
+            if(field.get(snmpData) != null) {
+                Object snmpVal = new OctetString(field.get(snmpData).toString());
 
-			if (!(snmpVal.equals(" ") || snmpVal.equals("")))
-			{
-				pdu.add(new VariableBinding(new OID(lookUp.getOID(field.getName())) , new OctetString(snmpVal.toString())));
-			}
+                if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
+                    pdu.add(new VariableBinding(new OID(lookUp.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                }
+            }
 		}
 
 		Snmp snmp = new Snmp(transport);
@@ -288,12 +289,13 @@ public class SNMPTrapSender extends CustomNotification
 
 		for (Field field : snmpData.getClass().getDeclaredFields())
 		{
-			Object snmpVal = new OctetString(field.get(snmpData).toString());
+            if(field.get(snmpData) != null) {
+                Object snmpVal = new OctetString(field.get(snmpData).toString());
 
-			if (!(snmpVal.equals(" ") || snmpVal.equals("")))
-			{
-				pdu.add(new VariableBinding(new OID(lookUp.getOID(field.getName())) , new OctetString(snmpVal.toString())));
-			}
+                if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
+                    pdu.add(new VariableBinding(new OID(lookUp.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                }
+            }
 		}
 
 		pdu.setType(PDU.NOTIFICATION);

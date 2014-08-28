@@ -4,14 +4,14 @@
     <community>PUBLIC</community>
     <trap-host>172.16.0.0</trap-host>
     <enable-logs>true</enable-logs>
-    <snmp-version>3</snmp-version>
+    <snmp-version>1</snmp-version>
     <!--Only requred if version set to 3-->
-    <v3>
+    <!--<v3>
         <security-level>2</security-level>
         <username>username</username>
         <password>password</password>
         <auth-protocol>SHA</auth-protocol>
         <priv-protocol>DES</priv-protocol>
         <priv-protocol-password>password</priv-protocol-password>
-    </v3>
+    </v3>-->
 </snmp-trap>
