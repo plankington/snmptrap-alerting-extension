@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SNMPTrapSender" default="build">
 
+  <property name="version" value="1.8" />
+
   <!-- Name of the output .jar file -->
   <property name="jar.name" value="SNMPTrapSender.jar" />
 
@@ -31,6 +33,10 @@
 
   <property name="dom4j" value="lib/dom4j/dom4j-2.0.0-ALPHA-2.jar" />
   <property name="log4j" value="lib/log4j/log4j-1.2.17.jar" />
+  <property name="rest-01" value="lib/rest-api/commons-codec-1.7.jar" />
+  <property name="rest-02" value="lib/rest-api/httpclient-4.2.2.jar" />
+  <property name="rest-03" value="lib/rest-api/httpcore-4.2.3.jar" />
+  <property name="rest-04" value="lib/rest-api/RESTToolkit.jar" />
   <property name="snmp4j" value="lib/snmp4j/snmp4j-2.1.0.jar" />
   <property name="snmp4j-javadoc" value="lib/snmp4j/snmp4j-2.1.0-javadoc.jar" />
 
@@ -79,7 +85,7 @@
       <attribute name="Main-Class" value="${main.class}" />
 
       <!-- Finally, use the generated libs path -->
-      <attribute name="Class-Path" value="./dom4j-2.0.0-ALPHA-2.jar ./log4j-1.2.17.jar ./snmp4j-2.1.0-javadoc.jar ./snmp4j-2.1.0.jar" />
+        <attribute name="Class-Path" value="./dom4j-2.0.0-ALPHA-2.jar ./log4j-1.2.17.jar ./snmp4j-2.1.0-javadoc.jar ./snmp4j-2.1.0.jar ./commons-codec-1.7.jar ./httpclient-4.2.2.jar ./httpcore-4.2.3.jar ./RESTToolkit.jar" />
   </manifest>
   </jar>
 
@@ -100,17 +106,24 @@
     <fileset file="${conf.home}/config.xml"/>
     <fileset file="${conf.home}/log4j.dtd"/>
     <fileset file="${conf.home}/log4j.xml"/>
-    <fileset file="${script.home}/APPD-CTLR-MIB.mib"/>
+      <fileset file="${script.home}/APPD-CTLR-MIB-v1.mib"/>
+      <fileset file="${script.home}/APPD-CTLR-MIB-v2.mib"/>
+      <fileset file="${script.home}/APPD-CTLR-MIB-v3.mib"/>
+
   </copy>
   <copy todir="${build.home}/temp/lib/">
     <fileset  file="${dom4j}"/>
     <fileset  file="${log4j}"/>
     <fileset  file="${snmp4j}"/>
     <fileset  file="${snmp4j-javadoc}"/>
+      <fileset  file="${rest-01}"/>
+      <fileset  file="${rest-02}"/>
+      <fileset  file="${rest-03}"/>
+      <fileset  file="${rest-04}"/>
   </copy>
 
-  <zip destfile="${dist.home}/SNMPTrapAlertingExtension.zip">
-    <zipfileset dir="${build.home}/temp" filemode="755"/>
+  <zip destfile="${dist.home}/SNMPTrapAlertingExtension-${version}.zip">
+    <zipfileset dir="${build.home}/temp" filemode="755" prefix="SNMPTrapAlertingExtension/" />
   </zip>
 </target>
 

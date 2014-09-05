@@ -22,7 +22,7 @@ appdMIB MODULE-IDENTITY
 		"AppDynamics Trap MIB"
 	REVISION "201209010000Z"	-- Sep 1, 2012 12:00:00 AM
 	DESCRIPTION
-		"First Release"
+		"Second Release - Six OID's"
 	-- 1.3.6.1.4.1.40684.1.1
 	::= { enterprises 40684 1 1 }
 
@@ -44,9 +44,14 @@ notifications OBJECT IDENTIFIER
 	::= { appd 500 }
 
 appdNotifications NOTIFICATION-GROUP
-	NOTIFICATIONS {
-		event }
-	STATUS  current
+        NOTIFICATIONS {
+                policyOpenWarning,
+                policyOpenCritical,
+                policyOpenUpgraded,
+                policyOpenDowngraded,
+                policyClosed,
+                nonPolicyEvent }
+        STATUS  current
 	DESCRIPTION
 		"Notifications for events"
 	-- 1.3.6.1.4.1.40684.1.1.1.200.1
@@ -67,7 +72,9 @@ appdEventObjects OBJECT-GROUP
 		summary,
 		link,
 		tag,
-        eventType }
+                eventType,
+                ipAddresses,
+                incidentId }
 	STATUS  current
 	DESCRIPTION
 		"Event attributes"
@@ -77,7 +84,7 @@ appdEventObjects OBJECT-GROUP
 
 -- Notifications
 
-event NOTIFICATION-TYPE
+policyOpenWarning NOTIFICATION-TYPE
 	OBJECTS {
 		application,
 		triggeredBy,
@@ -92,12 +99,134 @@ event NOTIFICATION-TYPE
 		summary,
 		link,
 		tag,
-        eventType }
+                eventType,
+                ipAddresses,
+                incidentId }
 	STATUS  current
 	DESCRIPTION
-		"Event notification"
+		"Policy Open Warning Notification"
 	-- 1.3.6.1.4.1.40684.1.1.1.500.1
 	::= { notifications 1 }
+
+policyOpenCritical NOTIFICATION-TYPE
+	OBJECTS {
+		application,
+		triggeredBy,
+		nodes,
+		txns,
+		machines,
+		tiers,
+		eventTime,
+		severity,
+		type,
+		subtype,
+		summary,
+		link,
+		tag,
+                eventType,
+                ipAddresses,
+                incidentId }
+	STATUS  current
+	DESCRIPTION
+		"Policy Open Critical Notification"
+	-- 1.3.6.1.4.1.40684.1.1.1.500.2
+	::= { notifications 2 }
+
+policyOpenUpgraded NOTIFICATION-TYPE
+	OBJECTS {
+		application,
+		triggeredBy,
+		nodes,
+		txns,
+		machines,
+		tiers,
+		eventTime,
+		severity,
+		type,
+		subtype,
+		summary,
+		link,
+		tag,
+                eventType,
+                ipAddresses,
+                incidentId }
+	STATUS  current
+	DESCRIPTION
+		"Policy Open Upgraded Notification"
+	-- 1.3.6.1.4.1.40684.1.1.1.500.3
+	::= { notifications 3 }
+
+policyOpenDowngraded NOTIFICATION-TYPE
+	OBJECTS {
+		application,
+		triggeredBy,
+		nodes,
+		txns,
+		machines,
+		tiers,
+		eventTime,
+		severity,
+		type,
+		subtype,
+		summary,
+		link,
+		tag,
+                eventType,
+                ipAddresses,
+                incidentId }
+	STATUS  current
+	DESCRIPTION
+		"Policy Open Downgraded Notification"
+	-- 1.3.6.1.4.1.40684.1.1.1.500.4
+	::= { notifications 4 }
+
+policyClosed NOTIFICATION-TYPE
+	OBJECTS {
+		application,
+		triggeredBy,
+		nodes,
+		txns,
+		machines,
+		tiers,
+		eventTime,
+		severity,
+		type,
+		subtype,
+		summary,
+		link,
+		tag,
+                eventType,
+                ipAddresses,
+                incidentId }
+	STATUS  current
+	DESCRIPTION
+		"Policy Closed Notification"
+	-- 1.3.6.1.4.1.40684.1.1.1.500.5
+	::= { notifications 5 }
+
+nonPolicyEvent NOTIFICATION-TYPE
+	OBJECTS {
+		application,
+		triggeredBy,
+		nodes,
+		txns,
+		machines,
+		tiers,
+		eventTime,
+		severity,
+		type,
+		subtype,
+		summary,
+		link,
+		tag,
+                eventType,
+                ipAddresses,
+                incidentId }
+	STATUS  current
+	DESCRIPTION
+		"Informational Event Notification"
+	-- 1.3.6.1.4.1.40684.1.1.1.500.6
+	::= { notifications 6 }
 
 -- Common
 
@@ -237,5 +366,23 @@ eventType OBJECT-TYPE
                 "Type of the event like POLICY_OPEN, POLICY_CLOSE etc"
         -- 1.3.6.1.4.1.40684.1.1.1.1.14
         ::= { eventData 14 }
+
+ipAddresses OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        MAX-ACCESS accessible-for-notify
+        STATUS  current
+        DESCRIPTION
+                "IP Addresses for affected nodes"
+        -- 1.3.6.1.4.1.40684.1.1.1.1.15
+        ::= { eventData 15 }
+
+incidentId OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        MAX-ACCESS accessible-for-notify
+        STATUS  current
+        DESCRIPTION
+                "The unique ID for the health rule violation"
+        -- 1.3.6.1.4.1.40684.1.1.1.1.16
+        ::= { eventData 16 }
 
 END

@@ -1,12 +1,12 @@
 /**
  * Copyright 2013 AppDynamics
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.DataFormatException;
 
@@ -60,65 +61,118 @@ import org.snmp4j.smi.OctetString;
 import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
+
+import com.appdynamics.Lookup.Lookup;
+import com.appdynamics.REST.RESTToolkit;
 import com.appdynamics.snmp.type.ADSnmpData;
 import com.appdynamics.snmp.util.CustomNotification;
-import com.appdynamics.Lookup.*;
 
 /**
  * Java class allows sending SNMP Traps
  */
 public class SNMPTrapSender extends CustomNotification
 {
-	private String trapOID = "1.3.6.1.4.1.40684.1.1.1.500.1";
-	private static Logger logger = Logger.getLogger(SNMPTrapSender.class);
-	private static boolean bLogging = false;
 
-	public static String SNMP_V1 = "1";
-	public static String SNMP_V2 = "2";
-	public static String SNMP_V3 = "3";
-	
-	public static String NO_AUTH_NO_PRIV = "1";
-	public static String AUTH_NO_PRIV = "2";
-	public static String AUTH_PRIV = "3";
+    private static final String TRAP_OID_01 = "1.3.6.1.4.1.40684.1.1.1.500.1";
+    private static final String TRAP_OID_02 = "1.3.6.1.4.1.40684.1.1.1.500.2";
+    private static final String TRAP_OID_03 = "1.3.6.1.4.1.40684.1.1.1.500.3";
+    private static final String TRAP_OID_04 = "1.3.6.1.4.1.40684.1.1.1.500.4";
+    private static final String TRAP_OID_05 = "1.3.6.1.4.1.40684.1.1.1.500.5";
+    private static final String TRAP_OID_06 = "1.3.6.1.4.1.40684.1.1.1.500.6";
 
-	/**
-	 * Main class that accepts command line arguments and assigns them to the 
-	 * SNMP Data object
-	 * @param 	args		Command line arguments
-	 * @throws 				Exception
-	 */
-	public static void main(String args[]) throws InvalidObjectException
-	{
-		try
-		{
-			logInfo("Starting to parse config");
-			
-			String SNMPTrapSenderHome = System.getProperty("SNMP_TRAP_SENDER_HOME");
+    private static String TRAP_OID = TRAP_OID_01;
 
-			Map<String, String> config = parseXML(SNMPTrapSenderHome + "/conf/config.xml");
+    private static Logger logger = Logger.getLogger(SNMPTrapSender.class);
+    private static boolean bLogging = true;
 
-			logInfo("Parsing config complete");
+    public static String SNMP_V1 = "1";
+    public static String SNMP_V2 = "2";
+    public static String SNMP_V3 = "3";
 
-			if (!(config.containsKey("host") || config.containsKey("port")))
-			{
-				logger.error("Cannot read values from config file. Please verify that they are set");
-				throw new InvalidObjectException("Cannot read values from config file. Please verify that they are set");
-			}
+    public static String NO_AUTH_NO_PRIV = "1";
+    public static String AUTH_NO_PRIV = "2";
+    public static String AUTH_PRIV = "3";
 
-			String host = config.get("host");
-			String port = config.get("port");
-			String trapHost = config.get("trap-host");
-			String community = (!config.containsKey("community") || config.get("community").toString().equals("")) ?
-					"PUBLIC" : config.get("community");
-			String snmp_ver = config.get("snmp-version");
+    public static String CONTROLLER_HOST;
+    public static String CONTROLLER_PORT;
+    public static String CONTROLLER_USERNAME;
+    public static String CONTROLLER_PASSWORD;
 
-			bLogging = Boolean.parseBoolean(config.get("enable-logs"));
+    public static int MIB_VERSION;
+    public static boolean SUPPRESS_NON_POLICY_EVENTS = false;
 
-			removeDoubleQuotes(args);
+    /**
+     * Main class that accepts command line arguments and assigns them to the
+     * SNMP Data object
+     * @param 	args		Command line arguments
+     * @throws 				Exception
+     */
+    public static void main(String args[]) throws InvalidObjectException
+    {
+        try
+        {
 
-			parseArgs(args);
+            logInfo("Starting to parse config");
 
-			logInfo("Finished parsing arguments");
+            String SNMPTrapSenderHome = System.getProperty("SNMP_TRAP_SENDER_HOME");
+
+            Map<String, String> config = parseXML(SNMPTrapSenderHome + "/conf/config.xml");
+
+            logInfo("Parsing config complete");
+
+            bLogging = Boolean.parseBoolean(config.get("enable-logs"));
+
+            if (!(config.containsKey("receiver-host") || config.containsKey("receiver-port")))
+            {
+                logger.error("Cannot read values from config file. Please verify that the values for receiver-host and receiver-port are set");
+                throw new InvalidObjectException("Cannot read values from config file. Please verify that the values for receiver-host and receiver-port are set");
+            }
+            if (!(config.containsKey("controller-host") || config.containsKey("controller-port")))
+            {
+                logger.error("Cannot read values from config file. Please verify that the values for controller-host and controller-port are set");
+                throw new InvalidObjectException("Cannot read values from config file. Please verify that the values for controller-host and controller-port are set");
+            }
+            if (!(config.containsKey("controller-username") || config.containsKey("controller-password")))
+            {
+                logger.error("Cannot read values from config file. Please verify that the values for controller-username and controller-password are set");
+                throw new InvalidObjectException("Cannot read values from config file. Please verify that the values for controller-username and controller-password are set");
+            }
+
+            String host = config.get("receiver-host");
+            String port = config.get("receiver-port");
+            String trapHost = config.get("sender-host");
+            CONTROLLER_HOST = config.get("controller-host");
+            CONTROLLER_PORT = config.get("controller-port");
+            CONTROLLER_USERNAME = config.get("controller-username");
+            CONTROLLER_PASSWORD = config.get("controller-password");
+
+            String mibVersion = config.get("mib-version");
+            if (mibVersion != null) {
+                if (mibVersion.equals("2")) {
+                    MIB_VERSION = 2;
+                } else if (mibVersion.equals("3")) {
+                    MIB_VERSION = 3;
+                } else {
+                    MIB_VERSION = 1;
+                }
+            } else {
+                MIB_VERSION = 1;
+            }
+
+            String suppressEvents = config.get("suppress-non-policy-events");
+            if (suppressEvents != null && suppressEvents.equals("true")) {
+                SUPPRESS_NON_POLICY_EVENTS = true;
+            }
+
+            String community = (!config.containsKey("community") || config.get("community").toString().equals("")) ?
+                    "PUBLIC" : config.get("community");
+            String snmp_ver = config.get("snmp-version");
+
+            removeDoubleQuotes(args);
+
+            parseArgs(args);
+
+            logInfo("Finished parsing arguments");
 
             ADSnmpData snmpData = new ADSnmpData();
             if (IS_HEALTH_RULE_VIOLATION) {
@@ -136,6 +190,8 @@ public class SNMPTrapSender extends CustomNotification
                 snmpData.link = DEEP_LINK_URL;
                 snmpData.tag = TAG;
                 snmpData.eventType = HR_EVENT_TYPE;
+                snmpData.incidentId = INCIDENT_ID;
+                snmpData.ipAddresses = IP_ADDRESSES;
             } else {
                 snmpData.application = APP_NAME;
                 snmpData.triggeredBy = EN_NAME;
@@ -146,382 +202,407 @@ public class SNMPTrapSender extends CustomNotification
                 snmpData.eventTime = EN_TIME;
                 snmpData.severity = SEVERITY;
                 String types = "";
-                if(event_types != null) {
-                    for (Event_Type type : event_types) {
-                        types += type.EVENT_TYPE + " ";
-                    }
+                for (Event_Type type : event_types){
+                    types += type.EVENT_TYPE + " ";
                 }
                 snmpData.type = types;
                 snmpData.subtype = " ";
                 String summaries = "";
-                if(event_summaries != null) {
-                    for (Event_Summary summary : event_summaries) {
-                        summaries += summary.EVENT_SUMMARY_STRING + ". ";
-                    }
+                for (Event_Summary summary : event_summaries){
+                    summaries += summary.EVENT_SUMMARY_STRING + ". ";
                 }
                 snmpData.summary = summaries;
                 snmpData.link = DEEP_LINK_URL;
                 snmpData.tag = TAG;
+                snmpData.eventType = "NON-POLICY-EVENT";
+                snmpData.incidentId = EN_ID;
+
             }
 
-			logInfo("------------SNMP Trap Data-------------");
-			for (Field field : snmpData.getClass().getFields())
-			{
-				if(field.getName() != null && field.get(snmpData) != null) {
+            logInfo("------------SNMP Trap Data-------------");
+            for (Field field : snmpData.getClass().getFields())
+            {
+                try {
                     logInfo(field.getName() + ": " + field.get(snmpData).toString());
+                } catch (Throwable ex) {
+                    logger.error("Error reading snmp data fields", ex);
                 }
-			}
-			logInfo("--------------------------------------");
-			logInfo("------------Sending Trap--------------");
 
-			if (snmp_ver.equals(SNMP_V1)) {
-				new SNMPTrapSender().sendV1Trap(host, port, community, trapHost, snmpData);
-			}
-			else if (snmp_ver.equals(SNMP_V2)) {
-				new SNMPTrapSender().sendV2Trap(host, port, community, trapHost, snmpData);
-			}
-			else if (snmp_ver.equals(SNMP_V3)) {
-				new SNMPTrapSender().sendV3Trap(host, port, trapHost, snmpData, config);
-			}
-			else {
-				logger.error("Invalid SNMP Trap Version: " + snmp_ver);
-				throw new InvalidObjectException("Invalid SNMP Trap Version: " + snmp_ver);
-			}
+            }
 
-			logInfo("-------------Trap Sent!---------------");
-		} catch (DataFormatException e) {
-			logger.error("Unable to parse arguments: " + e.getMessage());
-		} catch (DocumentException doc) {
-			logger.error("Cannot read or find config.xml.");
-		} catch (IOException e) {
-			logger.error("Failed to send trap: " + e.getMessage());
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to access SNMP Data Variable: " + e.getMessage());
-		} catch (IllegalAccessException e) {
-			logger.error("Failed to access SNMP Data Variable: " + e.getMessage());
-		}
-	}
+            if (IS_HEALTH_RULE_VIOLATION || (!SUPPRESS_NON_POLICY_EVENTS)) {
 
-	/**
-	 * Sends v1 Traps
-	 * @param 	host 						Host to send trap to
-	 * @param 	port						Port location to send trap to
-	 * @param 	community					Community (Default: PUBLIC)
-	 * @param 	trapHost					Host of the source sending the trap
-	 * @param 	snmpData					Trap Data
-	 * @throws 	IOException					Failed to send trap exception
-	 * @throws 	IllegalArgumentException 	Failed to access snmp trap variables
-	 * @throws 	IllegalAccessException 		Failed to access snmp trap variables
-	 */
-	@SuppressWarnings("rawtypes")
-	public void sendV1Trap(String host, String port, String community, String trapHost, ADSnmpData snmpData) 
-		throws IOException, IllegalArgumentException, IllegalAccessException 
-	{
-		Lookup lookUp = new Lookup();
+                logInfo("--------------------------------------");
+                logInfo("------------Sending Trap--------------");
 
-		TransportMapping transport = new DefaultUdpTransportMapping();
-		transport.listen();
+                if (snmp_ver.equals(SNMP_V1)) {
+                    new SNMPTrapSender().sendV1Trap(host, port, community, trapHost, snmpData);
+                } else if (snmp_ver.equals(SNMP_V2)) {
+                    new SNMPTrapSender().sendV2Trap(host, port, community, trapHost, snmpData);
+                } else if (snmp_ver.equals(SNMP_V3)) {
+                    new SNMPTrapSender().sendV3Trap(host, port, trapHost, snmpData, config);
+                } else {
+                    logger.error("Invalid SNMP Trap Version: " + snmp_ver);
+                    throw new InvalidObjectException("Invalid SNMP Trap Version: " + snmp_ver);
+                }
 
-		CommunityTarget comTarget = new CommunityTarget();
-		comTarget.setCommunity(new OctetString(community));
-		comTarget.setVersion(SnmpConstants.version1);
-		comTarget.setAddress(new UdpAddress(host + "/" + port));
-		comTarget.setRetries(2);
-		comTarget.setTimeout(5000);
+                logInfo("-------------Trap Sent!---------------");
+            }
 
-		PDUv1 pdu = new PDUv1();
-		pdu.setType(PDU.V1TRAP);
-		pdu.setEnterprise(new OID(trapOID));
-		pdu.setGenericTrap(PDUv1.ENTERPRISE_SPECIFIC);
-		pdu.setSpecificTrap(1);
-		pdu.setAgentAddress(new IpAddress(trapHost));
-		pdu.add(new VariableBinding(SnmpConstants.sysUpTime,  new OctetString(new Date().toString())));
-		pdu.add(new VariableBinding(SnmpConstants.snmpTrapOID, new OID(trapOID)));
-		pdu.add(new VariableBinding(SnmpConstants.snmpTrapAddress, new IpAddress(trapHost)));
 
-		for (Field field : snmpData.getClass().getDeclaredFields())
-		{
+        } catch (DataFormatException e) {
+            logger.error("Unable to parse arguments: " + e.getMessage());
+        } catch (DocumentException doc) {
+            logger.error("Cannot read or find config.xml.");
+        } catch (IOException e) {
+            logger.error("Failed to send trap: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("Failed to access SNMP Data Variable: " + e.getMessage());
+        } catch (IllegalAccessException e) {
+            logger.error("Failed to access SNMP Data Variable: " + e.getMessage());
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            logger.fatal("Fatal Error: ", ex);
+        }
+
+
+    }
+
+    /**
+     * Sends v1 Traps
+     * @param 	host 						Host to send trap to
+     * @param 	port						Port location to send trap to
+     * @param 	community					Community (Default: PUBLIC)
+     * @param 	trapHost					Host of the source sending the trap
+     * @param 	snmpData					Trap Data
+     * @throws 	IOException					Failed to send trap exception
+     * @throws 	IllegalArgumentException 	Failed to access snmp trap variables
+     * @throws 	IllegalAccessException 		Failed to access snmp trap variables
+     */
+    @SuppressWarnings("rawtypes")
+    public void sendV1Trap(String host, String port, String community, String trapHost, ADSnmpData snmpData)
+            throws IOException, IllegalArgumentException, IllegalAccessException
+    {
+        Lookup lookUp = new Lookup();
+
+        TransportMapping transport = new DefaultUdpTransportMapping();
+        transport.listen();
+
+        CommunityTarget comTarget = new CommunityTarget();
+        comTarget.setCommunity(new OctetString(community));
+        comTarget.setVersion(SnmpConstants.version1);
+        comTarget.setAddress(new UdpAddress(host + "/" + port));
+        comTarget.setRetries(2);
+        comTarget.setTimeout(5000);
+
+        PDUv1 pdu = new PDUv1();
+        pdu.setType(PDU.V1TRAP);
+        pdu.setEnterprise(new OID(TRAP_OID));
+        pdu.setGenericTrap(PDUv1.ENTERPRISE_SPECIFIC);
+        pdu.setSpecificTrap(1);
+        pdu.setAgentAddress(new IpAddress(trapHost));
+        pdu.add(new VariableBinding(SnmpConstants.sysUpTime,  new OctetString(new Date().toString())));
+        pdu.add(new VariableBinding(SnmpConstants.snmpTrapOID, new OID(TRAP_OID)));
+        pdu.add(new VariableBinding(SnmpConstants.snmpTrapAddress, new IpAddress(trapHost)));
+
+        for (Field field : snmpData.getClass().getDeclaredFields())
+        {
             if(field.get(snmpData) != null) {
-                Object snmpVal = new OctetString(field.get(snmpData).toString());
+                try {
+                    Object snmpVal = new OctetString(field.get(snmpData).toString());
 
-                if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
-                    pdu.add(new VariableBinding(new OID(lookUp.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                    if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
+                        pdu.add(new VariableBinding(new OID(lookUp.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                    }
+                } catch (Throwable ex) {
+                    logger.error("Error reading snmp data field:", ex);
                 }
             }
-		}
+        }
 
-		Snmp snmp = new Snmp(transport);
-		snmp.send(pdu, comTarget);
-		snmp.close();
-	}
+        Snmp snmp = new Snmp(transport);
+        snmp.send(pdu, comTarget);
+        snmp.close();
+    }
 
-	/**
-	 * Sends v2 Traps
-	 * @param 	host 						Host to send trap to
-	 * @param 	port						Port location to send trap to
-	 * @param 	community					Community (Default: PUBLIC)
-	 * @param 	trapHost					Host of the source sending the trap
-	 * @param 	snmpData					Trap Data
-	 * @throws 	IOException					Failed to send trap exception
-	 * @throws 	IllegalArgumentException 	Failed to access snmp trap variables
-	 * @throws 	IllegalAccessException 		Failed to access snmp trap variables
-	 */
-	@SuppressWarnings("rawtypes")
-	public void sendV2Trap(String host, String port, String community, String trapHost, ADSnmpData snmpData) 
-			throws IOException, IllegalArgumentException, IllegalAccessException
-	{
-		Lookup lookUp = new Lookup();
+    /**
+     * Sends v2 Traps
+     * @param 	host 						Host to send trap to
+     * @param 	port						Port location to send trap to
+     * @param 	community					Community (Default: PUBLIC)
+     * @param 	trapHost					Host of the source sending the trap
+     * @param 	snmpData					Trap Data
+     * @throws 	IOException					Failed to send trap exception
+     * @throws 	IllegalArgumentException 	Failed to access snmp trap variables
+     * @throws 	IllegalAccessException 		Failed to access snmp trap variables
+     */
+    @SuppressWarnings("rawtypes")
+    public void sendV2Trap(String host, String port, String community, String trapHost, ADSnmpData snmpData)
+            throws IOException, IllegalArgumentException, IllegalAccessException
+    {
+        Lookup lookUp = new Lookup();
 
-		TransportMapping transport = new DefaultUdpTransportMapping();
-		transport.listen();
+        TransportMapping transport = new DefaultUdpTransportMapping();
+        transport.listen();
 
-		CommunityTarget comTarget = new CommunityTarget();
-		comTarget.setCommunity(new OctetString(community));
-		comTarget.setVersion(SnmpConstants.version2c);
-		comTarget.setAddress(new UdpAddress(host + '/' + port));
-		comTarget.setRetries(2);
-		comTarget.setTimeout(5000);
+        CommunityTarget comTarget = new CommunityTarget();
+        comTarget.setCommunity(new OctetString(community));
+        comTarget.setVersion(SnmpConstants.version2c);
+        comTarget.setAddress(new UdpAddress(host + '/' + port));
+        comTarget.setRetries(2);
+        comTarget.setTimeout(5000);
 
-		PDU pdu = new PDU();
-		pdu.add(new VariableBinding(SnmpConstants.sysUpTime,  new OctetString(new Date().toString())));
-		pdu.add(new VariableBinding(SnmpConstants.snmpTrapOID, new OID(trapOID)));
-		pdu.add(new VariableBinding(SnmpConstants.snmpTrapAddress, new IpAddress(trapHost)));
+        PDU pdu = new PDU();
+        pdu.add(new VariableBinding(SnmpConstants.sysUpTime,  new OctetString(new Date().toString())));
+        pdu.add(new VariableBinding(SnmpConstants.snmpTrapOID, new OID(TRAP_OID)));
+        pdu.add(new VariableBinding(SnmpConstants.snmpTrapAddress, new IpAddress(trapHost)));
 
-		for (Field field : snmpData.getClass().getDeclaredFields())
-		{
+        for (Field field : snmpData.getClass().getDeclaredFields())
+        {
             if(field.get(snmpData) != null) {
-                Object snmpVal = new OctetString(field.get(snmpData).toString());
 
-                if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
-                    pdu.add(new VariableBinding(new OID(lookUp.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                try {
+                    Object snmpVal = new OctetString(field.get(snmpData).toString());
+
+                    if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
+                        pdu.add(new VariableBinding(new OID(lookUp.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                    }
+                } catch (Throwable ex) {
+                    logger.error("Error reading snmp data field:", ex);
                 }
             }
-		}
+        }
 
-		pdu.setType(PDU.NOTIFICATION);
+        pdu.setType(PDU.NOTIFICATION);
 
-		Snmp snmp = new Snmp(transport);
-		snmp.send(pdu, comTarget);
-		snmp.close();
-	}
+        Snmp snmp = new Snmp(transport);
+        snmp.send(pdu, comTarget);
+        snmp.close();
+    }
 
-	/**
-	 * Sends v3 Traps
-	 * @param 	host 					Host to send trap to
-	 * @param 	port					Port location to send trap to
-	 * @param 	trapHost				Host of the source sending the trap
-	 * @param 	snmpData				Trap Data
-	 * @param 	settings				V3 settings
-	 * @throws 	IOException					Failed to send trap exception
-	 * @throws 	IllegalArgumentException 	Failed to access snmp trap variables
-	 * @throws 	IllegalAccessException 		Failed to access snmp trap variables
-	 */
-	@SuppressWarnings("rawtypes")
-	public void sendV3Trap(String host, String port, String trapHost, ADSnmpData snmpData, Map<String, String> settings) 
-			throws IOException, IllegalArgumentException, IllegalAccessException
-	{
-		Lookup lookup = new Lookup();
+    /**
+     * Sends v3 Traps
+     * @param 	host 					Host to send trap to
+     * @param 	port					Port location to send trap to
+     * @param 	trapHost				Host of the source sending the trap
+     * @param 	snmpData				Trap Data
+     * @param 	settings				V3 settings
+     * @throws 	IOException					Failed to send trap exception
+     * @throws 	IllegalArgumentException 	Failed to access snmp trap variables
+     * @throws 	IllegalAccessException 		Failed to access snmp trap variables
+     */
+    @SuppressWarnings("rawtypes")
+    public void sendV3Trap(String host, String port, String trapHost, ADSnmpData snmpData, Map<String, String> settings)
+            throws IOException, IllegalArgumentException, IllegalAccessException
+    {
+        Lookup lookup = new Lookup();
 
-		TransportMapping transport = new DefaultUdpTransportMapping();
-		transport.listen();
+        TransportMapping transport = new DefaultUdpTransportMapping();
+        transport.listen();
 
-		USM usm = new USM
-		(
-			SecurityProtocols.getInstance(),
-			new OctetString(MPv3.createLocalEngineID()),
-			0
-		);
+        USM usm = new USM
+                (
+                        SecurityProtocols.getInstance(),
+                        new OctetString(MPv3.createLocalEngineID()),
+                        0
+                );
 
-		SecurityModels.getInstance().addSecurityModel(usm);
+        SecurityModels.getInstance().addSecurityModel(usm);
 
-		Snmp snmp = new Snmp(transport);
-		String securityLevel = settings.get("security-level");
+        Snmp snmp = new Snmp(transport);
+        String securityLevel = settings.get("security-level");
 
-		if(securityLevel.equals(NO_AUTH_NO_PRIV))
-		{
-			snmp.getUSM().addUser
-			(
-				new OctetString(settings.get("username")),
-				new UsmUser
-				(
-					new OctetString(settings.get("username")),
-					null,
-					null,
-					null,
-					null
-				)
-			);
-		}
-		else if(securityLevel.equals(AUTH_NO_PRIV))
-		{
-			snmp.getUSM().addUser
-			(
-				new OctetString(settings.get("username")),
-				new UsmUser
-				(
-					new OctetString(settings.get("username")),
-					(settings.get("auth-protocol").toUpperCase().contains("SHA")) ? AuthSHA.ID : AuthMD5.ID,
-					new OctetString(settings.get("password")),
-					null,
-					null
-				)
-			);
-		}
-		else if(securityLevel.equals(AUTH_PRIV))
-		{
-			OID privProtocol = PrivAES256.ID;
+        if(securityLevel.equals(NO_AUTH_NO_PRIV))
+        {
+            snmp.getUSM().addUser
+                    (
+                            new OctetString(settings.get("username")),
+                            new UsmUser
+                                    (
+                                            new OctetString(settings.get("username")),
+                                            null,
+                                            null,
+                                            null,
+                                            null
+                                    )
+                    );
+        }
+        else if(securityLevel.equals(AUTH_NO_PRIV))
+        {
+            snmp.getUSM().addUser
+                    (
+                            new OctetString(settings.get("username")),
+                            new UsmUser
+                                    (
+                                            new OctetString(settings.get("username")),
+                                            (settings.get("auth-protocol").toUpperCase().contains("SHA")) ? AuthSHA.ID : AuthMD5.ID,
+                                            new OctetString(settings.get("password")),
+                                            null,
+                                            null
+                                    )
+                    );
+        }
+        else if(securityLevel.equals(AUTH_PRIV))
+        {
+            OID privProtocol = PrivAES256.ID;
 
-			String strPrivProtocol = settings.get("priv-protocol");
+            String strPrivProtocol = settings.get("priv-protocol");
 
-			if (strPrivProtocol.toUpperCase().contains("3DES"))
-				privProtocol = Priv3DES.ID;
-			else if (strPrivProtocol.toUpperCase().contains("AES128"))
-				privProtocol = PrivAES128.ID;
-			else if (strPrivProtocol.toUpperCase().contains("AES192"))
-				privProtocol = PrivAES192.ID;
-			else if (strPrivProtocol.toUpperCase().contains("DES"))
-				privProtocol = PrivDES.ID;
+            if (strPrivProtocol.toUpperCase().contains("3DES"))
+                privProtocol = Priv3DES.ID;
+            else if (strPrivProtocol.toUpperCase().contains("AES128"))
+                privProtocol = PrivAES128.ID;
+            else if (strPrivProtocol.toUpperCase().contains("AES192"))
+                privProtocol = PrivAES192.ID;
+            else if (strPrivProtocol.toUpperCase().contains("DES"))
+                privProtocol = PrivDES.ID;
 
-			snmp.getUSM().addUser
-			(
-				new OctetString(settings.get("username")),
-				new UsmUser
-				(
-					new OctetString(settings.get("username")), 
-					(settings.get("auth-protocol").contains("SHA")) ? AuthSHA.ID : AuthMD5.ID, 
-					new OctetString(settings.get("password")),
-					privProtocol,
-					new OctetString(settings.get("priv-protocol-password"))
-				)
-			);
-		}
+            snmp.getUSM().addUser
+                    (
+                            new OctetString(settings.get("username")),
+                            new UsmUser
+                                    (
+                                            new OctetString(settings.get("username")),
+                                            (settings.get("auth-protocol").contains("SHA")) ? AuthSHA.ID : AuthMD5.ID,
+                                            new OctetString(settings.get("password")),
+                                            privProtocol,
+                                            new OctetString(settings.get("priv-protocol-password"))
+                                    )
+                    );
+        }
 
-		UserTarget usrTarget = new UserTarget();
-		usrTarget.setVersion(SnmpConstants.version3);
-		usrTarget.setAddress(new UdpAddress(host + '/' + port));
-		usrTarget.setRetries(2);
-		usrTarget.setSecurityLevel(Integer.valueOf(settings.get("security-level")));
-		usrTarget.setSecurityName(new OctetString(settings.get("username")));
-		usrTarget.setTimeout(5000);
+        UserTarget usrTarget = new UserTarget();
+        usrTarget.setVersion(SnmpConstants.version3);
+        usrTarget.setAddress(new UdpAddress(host + '/' + port));
+        usrTarget.setRetries(2);
+        usrTarget.setSecurityLevel(Integer.valueOf(settings.get("security-level")));
+        usrTarget.setSecurityName(new OctetString(settings.get("username")));
+        usrTarget.setTimeout(5000);
 
-		PDU pdu = new ScopedPDU();
-		pdu.setType(PDU.NOTIFICATION);
-		pdu.add(new VariableBinding(SnmpConstants.sysUpTime,  new OctetString(new Date().toString())));
-		pdu.add(new VariableBinding(SnmpConstants.snmpTrapOID, new OID(trapOID)));
-		pdu.add(new VariableBinding(SnmpConstants.snmpTrapAddress, new IpAddress(trapHost)));
+        PDU pdu = new ScopedPDU();
+        pdu.setType(PDU.NOTIFICATION);
+        pdu.add(new VariableBinding(SnmpConstants.sysUpTime,  new OctetString(new Date().toString())));
+        pdu.add(new VariableBinding(SnmpConstants.snmpTrapOID, new OID(TRAP_OID)));
+        pdu.add(new VariableBinding(SnmpConstants.snmpTrapAddress, new IpAddress(trapHost)));
 
-		for (Field field : snmpData.getClass().getDeclaredFields())
-		{
+        for (Field field : snmpData.getClass().getDeclaredFields())
+        {
             if(field.get(snmpData) != null) {
-                Object snmpVal = new OctetString(field.get(snmpData).toString());
+                try {
+                    Object snmpVal = new OctetString(field.get(snmpData).toString());
 
-                if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
-                    pdu.add(new VariableBinding(new OID(lookup.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                    if (!(snmpVal.equals(" ") || snmpVal.equals(""))) {
+                        pdu.add(new VariableBinding(new OID(lookup.getOID(field.getName())), new OctetString(snmpVal.toString())));
+                    }
+                } catch (Throwable ex) {
+                    logger.error("Error reading snmp data field:", ex);
                 }
             }
-		}
+        }
 
-		snmp.send(pdu, usrTarget);
-		snmp.close();
-	}
+        snmp.send(pdu, usrTarget);
+        snmp.close();
+    }
 
-	/**
-	 * Parses the config xml
-	 * @param 	xml			Configuration file locations
-	 * @return				Map<String, String> - Map of config objects
-	 * @throws 				DocumentException
-	 */
-	private static Map<String, String> parseXML(String xml) throws DocumentException
-	{
-		Map<String, String> map = new HashMap<String, String>();
-		SAXReader reader = new SAXReader();
-		Document document = reader.read(xml);
-		Element root = document.getRootElement();
+    /**
+     * Parses the config xml
+     * @param 	xml			Configuration file locations
+     * @return				Map<String, String> - Map of config objects
+     * @throws 				DocumentException
+     */
+    private static Map<String, String> parseXML(String xml) throws DocumentException
+    {
+        Map<String, String> map = new HashMap<String, String>();
+        SAXReader reader = new SAXReader();
+        Document document = reader.read(xml);
+        Element root = document.getRootElement();
 
-		for (Iterator<Element> i = root.elementIterator(); i.hasNext();)
-		{
-			Element element = (Element) i.next();
-			if (element.getName().equals("v3"))
-			{
-				Iterator<Element> elementIterator = element.elementIterator();
-				for (Iterator<Element> j = elementIterator; j.hasNext();)
-				{
-					element = (Element) j.next();
-					map.put(element.getName(), element.getText());
-				}
-			}
-			else {
-				map.put(element.getName(), element.getText());
-			}
-		}
+        for (Iterator<Element> i = root.elementIterator(); i.hasNext();)
+        {
+            Element element = (Element) i.next();
+            if (element.getName().equals("snmp-v3"))
+            {
+                Iterator<Element> elementIterator = element.elementIterator();
+                for (Iterator<Element> j = elementIterator; j.hasNext();)
+                {
+                    element = (Element) j.next();
+                    map.put(element.getName(), element.getText());
+                }
+            }
+            else {
+                map.put(element.getName(), element.getText());
+            }
+        }
 
-		return map;
-	}
+        return map;
+    }
 
-	/**
-	 * Parses the command line arguments that are passed
-	 * @param 	args			Arguments passed to this project
-	 * @throws DataFormatException 	Unable to parse arguments
-	 */
-	private static void parseArgs(String[] args) throws DataFormatException
-	{
-		try {
-			if (args[0].equals("--help") || args[0].equals("--h") || args[0].equals("-h") || args[0].equals("-help"))
-			{
-				bLogging = false;
-				System.out.println("Usage: java -jar SNMPTrapSender.jar -m <options>\n");
+    /**
+     * Parses the command line arguments that are passed
+     * @param 	args			Arguments passed to this project
+     * @throws DataFormatException 	Unable to parse arguments
+     */
+    private static void parseArgs(String[] args) throws DataFormatException
+    {
+        try {
 
-				System.out.println("Options:");
-				System.out.println("\t-a\t-\tApplication Name");
-				System.out.println("\t-trig\t-\tTriggered by");
-				System.out.println("\t-n\t-\tNodes involved");
-				System.out.println("\t-b\t-\tBusiness txns involved");
-				System.out.println("\t-mac\t-\tMachines involved");
-				System.out.println("\t-tier\t-\tTiers involved");
-				System.out.println("\t-e\t-\tEvent Time");
-				System.out.println("\t-sever\t-\tSeverity");
-				System.out.println("\t-type\t-\tType");
-				System.out.println("\t-summ\t-\tSummary");
-				System.out.println("\t-link\t-\tLink");
-				System.out.println("\t-tag\t-\tTag");
-				return;
-			}
-			else if (args[0].equals("-m"))
-			{
-				bLogging = false;
-				for (int i = 1; i < args.length - 1; i++)
-				{
-					if (args[i].equals("-a")) {
-						APP_NAME = args[++i];
-					} else if (args[i].equals("-trig")) {
-						POLICY_NAME = args[++i];
-					} else if (args[i].equals("-n")) {
-						NODES = args[++i];
-					} else if (args[i].equals("-b")) {
-						BTs = args[++i];
-					} else if (args[i].equals("-mac")) {
-						MACHINES = args[++i];
-					} else if (args[i].equals("-tier")) {
-						TIERS = args[++i];
-					} else if (args[i].equals("-e")) {
-						PVN_ALERT_TIME = args[++i];
-					} else if (args[i].equals("-sever")) {
-						SEVERITY = args[++i];
-					} else if (args[i].equals("-type")) {
-						AFFECTED_ENTITY_TYPE = args[++i];
-					} else if (args[i].equals("-summ")) {
-						SUMMARY_MESSAGE = args[++i];
-					} else if (args[i].equals("-link")) {
-						DEEP_LINK_URL = args[++i];
-					} else if (args[i].equals("-tag")) {
-						TAG = args[++i];
-					}
-				}
-				return;
-			}
+            if (args[0].equals("--help") || args[0].equals("--h") || args[0].equals("-h") || args[0].equals("-help"))
+            {
+                bLogging = false;
+                System.out.println("Usage: java -jar SNMPTrapSender.jar -m <options>\n");
+
+                System.out.println("Options:");
+                System.out.println("\t-a\t-\tApplication Name");
+                System.out.println("\t-trig\t-\tTriggered by");
+                System.out.println("\t-n\t-\tNodes involved");
+                System.out.println("\t-b\t-\tBusiness txns involved");
+                System.out.println("\t-mac\t-\tMachines involved");
+                System.out.println("\t-tier\t-\tTiers involved");
+                System.out.println("\t-e\t-\tEvent Time");
+                System.out.println("\t-sever\t-\tSeverity");
+                System.out.println("\t-type\t-\tType");
+                System.out.println("\t-summ\t-\tSummary");
+                System.out.println("\t-link\t-\tLink");
+                System.out.println("\t-tag\t-\tTag");
+                return;
+            }
+            else if (args[0].equals("-m"))
+            {
+                bLogging = false;
+                for (int i = 1; i < args.length - 1; i++)
+                {
+                    if (args[i].equals("-a")) {
+                        APP_NAME = args[++i];
+                    } else if (args[i].equals("-trig")) {
+                        POLICY_NAME = args[++i];
+                    } else if (args[i].equals("-n")) {
+                        NODES = args[++i];
+                    } else if (args[i].equals("-b")) {
+                        BTs = args[++i];
+                    } else if (args[i].equals("-mac")) {
+                        MACHINES = args[++i];
+                    } else if (args[i].equals("-tier")) {
+                        TIERS = args[++i];
+                    } else if (args[i].equals("-e")) {
+                        PVN_ALERT_TIME = args[++i];
+                    } else if (args[i].equals("-sever")) {
+                        SEVERITY = args[++i];
+                    } else if (args[i].equals("-type")) {
+                        AFFECTED_ENTITY_TYPE = args[++i];
+                    } else if (args[i].equals("-summ")) {
+                        SUMMARY_MESSAGE = args[++i];
+                    } else if (args[i].equals("-link")) {
+                        DEEP_LINK_URL = args[++i];
+                    } else if (args[i].equals("-tag")) {
+                        TAG = args[++i];
+                    }
+                }
+                return;
+            }
 
             int param = 0;
-            if (args[args.length-1].startsWith("http")){    //other events
+            if (args[args.length-1].startsWith("http")) {    //other events
+
                 IS_HEALTH_RULE_VIOLATION = false;
 
                 APP_NAME = args[param++];
@@ -594,24 +675,49 @@ public class SNMPTrapSender extends CustomNotification
                     logger.info("_______________________________________");
                 }
 
+                // determine and set the OID for the notification
+                setOID();
 
+            } else {    // health rule violation
 
-            } else {    //health rule violation
                 IS_HEALTH_RULE_VIOLATION = true;
 
-                APP_NAME = args[param++];
-                APP_ID = args[param++];
-                PVN_ALERT_TIME = args[param++];
-                PRIORITY = args[param++];
-                SEVERITY = args[param++];
-                TAG = args[param++];
-                POLICY_NAME = args[param++];
-                POLICY_ID = args[param++];
-                PVN_TIME_PERIOD_IN_MINUTES = args[param++];
-                AFFECTED_ENTITY_TYPE = args[param++];
-                AFFECTED_ENTITY_NAME = args[param++];
-                AFFECTED_ENTITY_ID = args[param++];
-                NUMBER_OF_EVALUATION_ENTITIES = Integer.parseInt(args[param++]);
+                List<String> ipAddresses = new ArrayList<String>();
+                List<String> ipListTemp;
+                String ip;
+
+                RESTToolkit rtk = null;
+                try {
+                    rtk = new RESTToolkit(CONTROLLER_USERNAME, CONTROLLER_PASSWORD, "http://" + CONTROLLER_HOST + ":" + CONTROLLER_PORT, null);
+                } catch (Throwable ex) {
+                    rtk = null;
+                    logger.error("Could not instaniate the RESTToolkit", ex);
+                }
+
+
+                APP_NAME = args[param++];											// 0
+                APP_ID = args[param++];												// 1
+                PVN_ALERT_TIME = args[param++];										// 2
+                PRIORITY = args[param++];											// 3
+                SEVERITY = args[param++];											// 4
+                TAG = args[param++];												// 5
+                POLICY_NAME = args[param++];										// 6
+                POLICY_ID = args[param++];											// 7
+                PVN_TIME_PERIOD_IN_MINUTES = args[param++];							// 8
+                AFFECTED_ENTITY_TYPE = args[param++];								// 9
+                AFFECTED_ENTITY_NAME = args[param++];								// 10
+                AFFECTED_ENTITY_ID = args[param++];									// 11
+                NUMBER_OF_EVALUATION_ENTITIES = Integer.parseInt(args[param++]);	// 12
+
+                if (AFFECTED_ENTITY_TYPE != null) {
+                    AFFECTED_ENTITY_TYPE = new String(AFFECTED_ENTITY_TYPE.trim());
+                }
+                if (AFFECTED_ENTITY_NAME != null) {
+                    AFFECTED_ENTITY_NAME = new String(AFFECTED_ENTITY_NAME.trim());
+                }
+                if (AFFECTED_ENTITY_ID != null) {
+                    AFFECTED_ENTITY_ID = new String(AFFECTED_ENTITY_ID.trim());
+                }
 
                 if (bLogging)
                 {
@@ -631,26 +737,94 @@ public class SNMPTrapSender extends CustomNotification
                     logger.info("NUMBER_OF_EVALUATION_ENTITIES: " + NUMBER_OF_EVALUATION_ENTITIES);
                 }
 
+
+                if (AFFECTED_ENTITY_TYPE != null && AFFECTED_ENTITY_ID != null) {
+
+                    if (AFFECTED_ENTITY_TYPE.equals("APPLICATION")) {
+                        // get the IP Addresses for all nodes in the application
+                        ipListTemp = rtk.getIPV4AddressesForApp(APP_NAME);
+                        addIPV4Addresses(ipListTemp, ipAddresses);
+                    } else  if (AFFECTED_ENTITY_TYPE.equals("APPLICATION_COMPONENT")) {
+                        // get the IP Addresses for all nodes in the tier
+                        ipListTemp = rtk.getIPV4AddressesForTier(APP_NAME, AFFECTED_ENTITY_ID);
+                        addIPV4Addresses(ipListTemp, ipAddresses);
+                    } else  if (AFFECTED_ENTITY_TYPE.equals("APPLICATION_COMPONENT_NODE")) {
+                        // get the IP Address for the node
+                        ip = rtk.getIPV4AddressForNode(APP_NAME, AFFECTED_ENTITY_ID);
+                        addIPV4Address(ipAddresses, ip);
+                    } else  if (AFFECTED_ENTITY_TYPE.equals("BUSINESS_TRANSACTION")) {
+                        // get the IP Addresses for all nodes in the tier this BT belongs to
+                        ipListTemp = rtk.getIPV4AddressesForBT(APP_NAME, AFFECTED_ENTITY_ID);
+                        addIPV4Addresses(ipListTemp, ipAddresses);
+                    }
+
+                }
+
                 entities = new ArrayList<Evaluation_Entity>();
                 for (int i = 0; i < NUMBER_OF_EVALUATION_ENTITIES; i++)
                 {
                     Evaluation_Entity entity = new Evaluation_Entity();
                     entity.EVALUATION_ENTITY_TYPE = args[param++];
+                    if (entity.EVALUATION_ENTITY_TYPE != null) {
+                        entity.EVALUATION_ENTITY_TYPE = new String(entity.EVALUATION_ENTITY_TYPE.trim());
+                    }
 
                     entity.EVALUATION_ENTITY_NAME = args[param++];
+                    if (entity.EVALUATION_ENTITY_NAME != null) {
+                        entity.EVALUATION_ENTITY_NAME = new String(entity.EVALUATION_ENTITY_NAME.trim());
+                    }
 
                     entity.EVALUATION_ENTITY_ID = args[param++];
+                    if (entity.EVALUATION_ENTITY_ID != null) {
+                        entity.EVALUATION_ENTITY_ID = new String(entity.EVALUATION_ENTITY_ID.trim());
+                    }
 
-                    if (entity.EVALUATION_ENTITY_TYPE.contains("APPLICATION_COMPONENT_NODE"))
+                    if (entity.EVALUATION_ENTITY_TYPE.contains("APPLICATION_COMPONENT_NODE")) {
                         NODES += entity.EVALUATION_ENTITY_NAME + " ";
-                    else if (entity.EVALUATION_ENTITY_TYPE.contains("APPLICATION_COMPONENT"))
+                    } else if (entity.EVALUATION_ENTITY_TYPE.contains("APPLICATION_COMPONENT")) {
                         TIERS += entity.EVALUATION_ENTITY_NAME + " ";
-                    else if (entity.EVALUATION_ENTITY_TYPE.contains("MACHINE_INSTANCE"))
+                    } else if (entity.EVALUATION_ENTITY_TYPE.contains("MACHINE_INSTANCE")) {
                         MACHINES += entity.EVALUATION_ENTITY_NAME + " ";
-                    else if (entity.EVALUATION_ENTITY_TYPE.contains("BUSINESS_TRANSACTION"))
+                    } else if (entity.EVALUATION_ENTITY_TYPE.contains("BUSINESS_TRANSACTION")) {
                         BTs += entity.EVALUATION_ENTITY_NAME + " ";
-                    else if (AFFECTED_ENTITY_TYPE.contains("BUSINESS_TRANSACTION"))
+                    } else if (AFFECTED_ENTITY_TYPE.contains("BUSINESS_TRANSACTION")) {
                         BTs += AFFECTED_ENTITY_NAME + " ";
+                    }
+
+                    try {
+
+                        if (AFFECTED_ENTITY_TYPE != null && entity.EVALUATION_ENTITY_TYPE != null && entity.EVALUATION_ENTITY_ID != null) {
+
+                            if (!AFFECTED_ENTITY_TYPE.equals("APPLICATION") &&
+                                    !AFFECTED_ENTITY_TYPE.equals("APPLICATION_COMPONENT")  &&
+                                    !AFFECTED_ENTITY_TYPE.equals("APPLICATION_COMPONENT_NODE") &&
+                                    !AFFECTED_ENTITY_TYPE.equals("BUSINESS_TRANSACTION")) {
+
+                                if (entity.EVALUATION_ENTITY_TYPE.equals("APPLICATION_COMPONENT")) {
+                                    // get the IP Addresses for all nodes in the tier
+                                    ipListTemp = rtk.getIPV4AddressesForTier(APP_NAME, entity.EVALUATION_ENTITY_ID);
+                                    addIPV4Addresses(ipListTemp, ipAddresses);
+                                } else  if (entity.EVALUATION_ENTITY_TYPE.equals("APPLICATION_COMPONENT_NODE")) {
+                                    // get the IP Address for the node
+                                    ip = rtk.getIPV4AddressForNode(APP_NAME, entity.EVALUATION_ENTITY_ID);
+                                    addIPV4Address(ipAddresses, ip);
+                                } else  if (entity.EVALUATION_ENTITY_TYPE.equals("BUSINESS_TRANSACTION")) {
+                                    // get the IP Addresses for all nodes in the tier this BT belongs to
+                                    ipListTemp = rtk.getIPV4AddressesForBT(APP_NAME, entity.EVALUATION_ENTITY_ID);
+                                    addIPV4Addresses(ipListTemp, ipAddresses);
+                                } else {
+                                    // get the IP Addresses for all nodes in the application
+                                    ipListTemp = rtk.getIPV4AddressesForApp(APP_NAME);
+                                    addIPV4Addresses(ipListTemp, ipAddresses);
+                                }
+
+                            }
+
+                        }
+
+                    } catch (Throwable ex) {
+                        logger.error("A problem occured utilizing the RESTToolkit", ex);
+                    }
 
                     entity.NUMBER_OF_TRIGGERED_CONDITIONS_PER_EVALUATION_ENTITY = Integer.parseInt(args[param++]);
 
@@ -715,6 +889,23 @@ public class SNMPTrapSender extends CustomNotification
                 INCIDENT_ID = args[param++];
                 DEEP_LINK_URL = args[param++] + INCIDENT_ID;
                 HR_EVENT_TYPE = args[param++];
+
+
+                // add IP Addresses here - IP_ADDRESSES = 10.125.21.2,10.125.21.3
+                StringBuffer buff = new StringBuffer();
+                if (ipAddresses.size() > 0) {
+
+                    for (String str : ipAddresses) {
+                        buff.append(str);
+                        buff.append(",");
+                    }
+                    String str = buff.toString().trim();
+                    IP_ADDRESSES = str.substring(0, str.length() - 1);
+
+                } else {
+                    IP_ADDRESSES = "null";
+                }
+
                 if (bLogging)
                 {
                     logger.info("SUMMARY_MESSAGE: " + SUMMARY_MESSAGE);
@@ -723,33 +914,104 @@ public class SNMPTrapSender extends CustomNotification
                     logger.info("HR_EVENT_TYPE: " + HR_EVENT_TYPE);
                     logger.info("_______________________________________");
                 }
+
+                // determine and set the OID for the notification
+                setOID();
+
+
             }
 
-		}
-		catch (Exception e) {
-			throw new DataFormatException(e.toString());
-		}
-	}
+        }
 
-	/**
-	 * Removes double quotes from passed arguments
-	 * @param 	args	Passed arguments
-	 */
-	private static void removeDoubleQuotes(String[] args)
-	{
-		for (int i=0; i < args.length; i++)
-		{
-			args[i]=args[i].replaceAll("\"", "");
-		}
-	}
 
-	/**
-	 * Logs info level information
-	 */
-	private static void logInfo(Object message) {
-		if (bLogging) 
-		{
-			logger.info(message);
-		}
-	}
+        catch (Throwable e) {
+            throw new DataFormatException(e.toString());
+        }
+    }
+
+    private static void addIPV4Address(List<String> ipList, String ip) {
+        if (ip != null && (!ipList.contains(ip))) {
+            ipList.add(ip);
+        }
+    }
+    private static void addIPV4Addresses(List<String> source, List<String> destination) {
+        if (source != null) {
+            for (String ip : source) {
+                if (!destination.contains(ip)) {
+                    destination.add(ip);
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines and sets the appropriate OID for the notification based on the value set
+     * for the configuration option "mib-version".
+     *
+     */
+    private static void setOID() {
+
+        switch (MIB_VERSION) {
+            case 1:
+                TRAP_OID = TRAP_OID_01;
+                break;
+
+            case 2:
+                if (HR_EVENT_TYPE.equals("POLICY_CLOSE") || HR_EVENT_TYPE.equals("POLICY_CANCELLED")) {
+                    TRAP_OID = TRAP_OID_02;
+                } else if (HR_EVENT_TYPE.equals("NON_POLICY_EVENT")) {
+                    TRAP_OID = TRAP_OID_03;
+                } else {
+                    TRAP_OID = TRAP_OID_01;
+                }
+                break;
+
+            case 3:
+                if (HR_EVENT_TYPE.equals("POLICY_OPEN_WARNING")) {
+                    TRAP_OID = TRAP_OID_01;
+                } else if (HR_EVENT_TYPE.equals("POLICY_OPEN_CRITICAL")) {
+                    TRAP_OID = TRAP_OID_02;
+                } else if (HR_EVENT_TYPE.equals("POLICY_OPEN_UPGRADED")) {
+                    TRAP_OID = TRAP_OID_03;
+                } else if (HR_EVENT_TYPE.equals("POLICY_OPEN_DOWNGRADED")) {
+                    TRAP_OID = TRAP_OID_04;
+                } else if (HR_EVENT_TYPE.equals("POLICY_CLOSE")) {
+                    TRAP_OID = TRAP_OID_05;
+                } else if (HR_EVENT_TYPE.equals("POLICY_CANCELLED")) {
+                    TRAP_OID = TRAP_OID_05;
+                } else if (HR_EVENT_TYPE.equals("NON_POLICY_EVENT")) {
+                    TRAP_OID = TRAP_OID_06;
+                } else {
+                    TRAP_OID = TRAP_OID_05;
+                }
+                break;
+
+            default:
+                TRAP_OID = TRAP_OID_01;
+                break;
+        }
+
+    }
+
+    /**
+     * Removes double quotes from passed arguments
+     * @param 	args	Passed arguments
+     */
+    private static void removeDoubleQuotes(String[] args)
+    {
+        for (int i=0; i < args.length; i++)
+        {
+            args[i]=args[i].replaceAll("\"", "");
+        }
+    }
+
+    /**
+     * Logs info level information
+     */
+    private static void logInfo(Object message) {
+        if (bLogging)
+        {
+            logger.info(message);
+        }
+    }
 }
