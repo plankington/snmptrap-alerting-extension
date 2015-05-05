@@ -79,6 +79,11 @@ public class SNMPTrapSender extends CustomNotification
     private static final String TRAP_OID_04 = "1.3.6.1.4.1.40684.1.1.1.500.4";
     private static final String TRAP_OID_05 = "1.3.6.1.4.1.40684.1.1.1.500.5";
     private static final String TRAP_OID_06 = "1.3.6.1.4.1.40684.1.1.1.500.6";
+    private static final String TRAP_OID_07 = "1.3.6.1.4.1.40684.1.1.1.500.7";
+    private static final String TRAP_OID_08 = "1.3.6.1.4.1.40684.1.1.1.500.8";
+    private static final String TRAP_OID_09 = "1.3.6.1.4.1.40684.1.1.1.500.9";
+    private static final String TRAP_OID_10 = "1.3.6.1.4.1.40684.1.1.1.500.10";
+
 
     private static String TRAP_OID = TRAP_OID_01;
 
@@ -957,7 +962,7 @@ public class SNMPTrapSender extends CustomNotification
                 break;
 
             case 2:
-                if (HR_EVENT_TYPE.equals("POLICY_CLOSE") || HR_EVENT_TYPE.equals("POLICY_CANCELLED")) {
+                if (HR_EVENT_TYPE.startsWith("POLICY_CLOSE") || HR_EVENT_TYPE.equals("POLICY_CANCELLED")) {
                     TRAP_OID = TRAP_OID_02;
                 } else if (HR_EVENT_TYPE.equals("NON_POLICY_EVENT")) {
                     TRAP_OID = TRAP_OID_03;
@@ -975,12 +980,20 @@ public class SNMPTrapSender extends CustomNotification
                     TRAP_OID = TRAP_OID_03;
                 } else if (HR_EVENT_TYPE.equals("POLICY_OPEN_DOWNGRADED")) {
                     TRAP_OID = TRAP_OID_04;
-                } else if (HR_EVENT_TYPE.equals("POLICY_CLOSE")) {
+                } else if (HR_EVENT_TYPE.startsWith("POLICY_CLOSE")) {
                     TRAP_OID = TRAP_OID_05;
                 } else if (HR_EVENT_TYPE.equals("POLICY_CANCELLED")) {
                     TRAP_OID = TRAP_OID_05;
                 } else if (HR_EVENT_TYPE.equals("NON_POLICY_EVENT")) {
                     TRAP_OID = TRAP_OID_06;
+                } else if(HR_EVENT_TYPE.equals("POLICY_CANCELLED_WARNING")) {
+                    TRAP_OID = TRAP_OID_07;
+                } else if(HR_EVENT_TYPE.equals("POLICY_CANCELLED_CRITICAL")) {
+                    TRAP_OID = TRAP_OID_08;
+                } else if(HR_EVENT_TYPE.equals("POLICY_CONTINUES_WARNING")) {
+                    TRAP_OID = TRAP_OID_09;
+                } else if(HR_EVENT_TYPE.equals("POLICY_CONTINUES_CRITICAL")) {
+                    TRAP_OID = TRAP_OID_10;
                 } else {
                     TRAP_OID = TRAP_OID_05;
                 }
