@@ -976,9 +976,9 @@ public class SNMPTrapSender extends CustomNotification
                     TRAP_OID = TRAP_OID_01;
                 } else if (HR_EVENT_TYPE.equals("POLICY_OPEN_CRITICAL")) {
                     TRAP_OID = TRAP_OID_02;
-                } else if (HR_EVENT_TYPE.equals("POLICY_OPEN_UPGRADED")) {
+                } else if (HR_EVENT_TYPE.equals("POLICY_UPGRADED")) {
                     TRAP_OID = TRAP_OID_03;
-                } else if (HR_EVENT_TYPE.equals("POLICY_OPEN_DOWNGRADED")) {
+                } else if (HR_EVENT_TYPE.equals("POLICY_DOWNGRADED")) {
                     TRAP_OID = TRAP_OID_04;
                 } else if (HR_EVENT_TYPE.startsWith("POLICY_CLOSE")) {
                     TRAP_OID = TRAP_OID_05;

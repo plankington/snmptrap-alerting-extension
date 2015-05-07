@@ -47,8 +47,8 @@ appdNotifications NOTIFICATION-GROUP
         NOTIFICATIONS {
                 policyOpenWarning,
                 policyOpenCritical,
-                policyOpenUpgraded,
-                policyOpenDowngraded,
+                policyUpgraded,
+                policyDowngraded,
                 policyClosed,
                 nonPolicyEvent,
                 policyCancelledWarning,
@@ -136,7 +136,7 @@ policyOpenCritical NOTIFICATION-TYPE
 	-- 1.3.6.1.4.1.40684.1.1.1.500.2
 	::= { notifications 2 }
 
-policyOpenUpgraded NOTIFICATION-TYPE
+policyUpgraded NOTIFICATION-TYPE
 	OBJECTS {
 		application,
 		triggeredBy,
@@ -156,11 +156,11 @@ policyOpenUpgraded NOTIFICATION-TYPE
                 incidentId }
 	STATUS  current
 	DESCRIPTION
-		"Policy Open Upgraded Notification"
+		"Policy Upgraded Notification"
 	-- 1.3.6.1.4.1.40684.1.1.1.500.3
 	::= { notifications 3 }
 
-policyOpenDowngraded NOTIFICATION-TYPE
+policyDowngraded NOTIFICATION-TYPE
 	OBJECTS {
 		application,
 		triggeredBy,
@@ -180,7 +180,7 @@ policyOpenDowngraded NOTIFICATION-TYPE
                 incidentId }
 	STATUS  current
 	DESCRIPTION
-		"Policy Open Downgraded Notification"
+		"Policy Downgraded Notification"
 	-- 1.3.6.1.4.1.40684.1.1.1.500.4
 	::= { notifications 4 }
 
