@@ -548,8 +548,8 @@ public class SNMPTrapSender extends CustomNotification
 
             if(bLogging){
                 if(args != null){
-                    logger.info("CUSTOM ACTIONS ARGS :: " + Arrays.toString(args));
-                    logger.info("LOCAL ENGINE ID ::" + MPv3.createLocalEngineID());
+                    logger.debug("CUSTOM ACTIONS ARGS :: " + Arrays.toString(args));
+                    logger.debug("LOCAL ENGINE ID ::" + MPv3.createLocalEngineID());
                 }
             }
 
