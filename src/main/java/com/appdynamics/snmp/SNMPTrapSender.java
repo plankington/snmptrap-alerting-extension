@@ -22,12 +22,7 @@ package com.appdynamics.snmp;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.DataFormatException;
 
 import org.apache.log4j.Logger;
@@ -551,6 +546,13 @@ public class SNMPTrapSender extends CustomNotification
     {
         try {
 
+            if(bLogging){
+                if(args != null){
+                    logger.info("CUSTOM ACTIONS ARGS :: " + Arrays.toString(args));
+                    logger.info("LOCAL ENGINE ID ::" + MPv3.createLocalEngineID());
+                }
+            }
+
             if (args[0].equals("--help") || args[0].equals("--h") || args[0].equals("-h") || args[0].equals("-help"))
             {
                 bLogging = false;
@@ -606,7 +608,7 @@ public class SNMPTrapSender extends CustomNotification
             }
 
             int param = 0;
-            if (args[args.length-1].startsWith("http")) {    //other events
+            if (!isHRVEvent(args[args.length - 3])) {    //other events
 
                 IS_HEALTH_RULE_VIOLATION = false;
 
@@ -932,6 +934,18 @@ public class SNMPTrapSender extends CustomNotification
         catch (Throwable e) {
             throw new DataFormatException(e.toString());
         }
+    }
+
+    /**
+     * Discussed with Jon Reid from controller to figure out the right way of differentiating a HRV and non-HRV.
+     * @param eventType
+     * @return
+     */
+    private static boolean isHRVEvent(String eventType) {
+        if(eventType != null){
+            return eventType.startsWith("POLICY");
+        }
+        return false;
     }
 
     private static void addIPV4Address(List<String> ipList, String ip) {
