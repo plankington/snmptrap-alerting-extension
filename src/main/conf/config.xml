@@ -61,6 +61,8 @@
     
     <!-- snmp version used to send the trap to the receiver | 1:2:3 -->
     <snmp-version>3</snmp-version>
+
+
     
     <!--Only required if snmp-version set to 3-->
     <snmp-v3>
@@ -70,6 +72,8 @@
         <auth-protocol>SHA</auth-protocol>
         <priv-protocol>DES</priv-protocol>
         <priv-protocol-password>password</priv-protocol-password>
+        <!-- config engine id -->
+        <config-engine-id></config-engine-id>
     </snmp-v3>
     
 </snmp-trap>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="SNMPTrapSender" default="build">
 
-  <property name="version" value="2.2" />
+  <property name="version" value="2.4" />
 
   <!-- Name of the output .jar file -->
   <property name="jar.name" value="SNMPTrapSender.jar" />

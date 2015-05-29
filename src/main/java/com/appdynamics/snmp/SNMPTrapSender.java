@@ -400,10 +400,19 @@ public class SNMPTrapSender extends CustomNotification
         TransportMapping transport = new DefaultUdpTransportMapping();
         transport.listen();
 
+        byte[] defaultEngineId = MPv3.createLocalEngineID();
+        String engineIdFromConfig = settings.get("config-engine-id");
+        if(engineIdFromConfig != null && !engineIdFromConfig.isEmpty()){
+            defaultEngineId = engineIdFromConfig.getBytes();
+        }
+
+        MPv3 mpv3 = new MPv3(defaultEngineId);
+        logInfo("LOCAL ENGINE ID ::" + mpv3.getLocalEngineID());
+
         USM usm = new USM
                 (
                         SecurityProtocols.getInstance(),
-                        new OctetString(MPv3.createLocalEngineID()),
+                        new OctetString(mpv3.getLocalEngineID()),
                         0
                 );
 
@@ -549,7 +558,7 @@ public class SNMPTrapSender extends CustomNotification
             if(bLogging){
                 if(args != null){
                     logger.debug("CUSTOM ACTIONS ARGS :: " + Arrays.toString(args));
-                    logger.debug("LOCAL ENGINE ID ::" + MPv3.createLocalEngineID());
+                  //  logger.debug("LOCAL ENGINE ID ::" + );
                 }
             }
 
@@ -744,27 +753,30 @@ public class SNMPTrapSender extends CustomNotification
                     logger.info("NUMBER_OF_EVALUATION_ENTITIES: " + NUMBER_OF_EVALUATION_ENTITIES);
                 }
 
+                try{
+                    if (AFFECTED_ENTITY_TYPE != null && AFFECTED_ENTITY_ID != null) {
 
-                if (AFFECTED_ENTITY_TYPE != null && AFFECTED_ENTITY_ID != null) {
+                        if (AFFECTED_ENTITY_TYPE.equals("APPLICATION")) {
+                            // get the IP Addresses for all nodes in the application
+                            ipListTemp = rtk.getIPV4AddressesForApp(APP_NAME);
+                            addIPV4Addresses(ipListTemp, ipAddresses);
+                        } else  if (AFFECTED_ENTITY_TYPE.equals("APPLICATION_COMPONENT")) {
+                            // get the IP Addresses for all nodes in the tier
+                            ipListTemp = rtk.getIPV4AddressesForTier(APP_NAME, AFFECTED_ENTITY_ID);
+                            addIPV4Addresses(ipListTemp, ipAddresses);
+                        } else  if (AFFECTED_ENTITY_TYPE.equals("APPLICATION_COMPONENT_NODE")) {
+                            // get the IP Address for the node
+                            ip = rtk.getIPV4AddressForNode(APP_NAME, AFFECTED_ENTITY_ID);
+                            addIPV4Address(ipAddresses, ip);
+                        } else  if (AFFECTED_ENTITY_TYPE.equals("BUSINESS_TRANSACTION")) {
+                            // get the IP Addresses for all nodes in the tier this BT belongs to
+                            ipListTemp = rtk.getIPV4AddressesForBT(APP_NAME, AFFECTED_ENTITY_ID);
+                            addIPV4Addresses(ipListTemp, ipAddresses);
+                        }
 
-                    if (AFFECTED_ENTITY_TYPE.equals("APPLICATION")) {
-                        // get the IP Addresses for all nodes in the application
-                        ipListTemp = rtk.getIPV4AddressesForApp(APP_NAME);
-                        addIPV4Addresses(ipListTemp, ipAddresses);
-                    } else  if (AFFECTED_ENTITY_TYPE.equals("APPLICATION_COMPONENT")) {
-                        // get the IP Addresses for all nodes in the tier
-                        ipListTemp = rtk.getIPV4AddressesForTier(APP_NAME, AFFECTED_ENTITY_ID);
-                        addIPV4Addresses(ipListTemp, ipAddresses);
-                    } else  if (AFFECTED_ENTITY_TYPE.equals("APPLICATION_COMPONENT_NODE")) {
-                        // get the IP Address for the node
-                        ip = rtk.getIPV4AddressForNode(APP_NAME, AFFECTED_ENTITY_ID);
-                        addIPV4Address(ipAddresses, ip);
-                    } else  if (AFFECTED_ENTITY_TYPE.equals("BUSINESS_TRANSACTION")) {
-                        // get the IP Addresses for all nodes in the tier this BT belongs to
-                        ipListTemp = rtk.getIPV4AddressesForBT(APP_NAME, AFFECTED_ENTITY_ID);
-                        addIPV4Addresses(ipListTemp, ipAddresses);
                     }
-
+                } catch (Throwable ex) {
+                    logger.error("A problem occured utilizing the RESTToolkit", ex);
                 }
 
                 entities = new ArrayList<Evaluation_Entity>();
