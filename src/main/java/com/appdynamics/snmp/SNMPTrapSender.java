@@ -617,7 +617,7 @@ public class SNMPTrapSender extends CustomNotification
             }
 
             int param = 0;
-            if (!isHRVEvent(args[args.length - 3])) {    //other events
+            if (!isHRVEvent(args[args.length - 1])) {    //other events
 
                 IS_HEALTH_RULE_VIOLATION = false;
 
